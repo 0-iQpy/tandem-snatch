@@ -2,18 +2,24 @@ extends Node3D
 
 @export var building_scenes: Array[PackedScene]
 @export var obstacle_scenes: Array[PackedScene]
+@export var pedestrian_scenes: Array[PackedScene] 
 
 @export var max_cars_per_tile: int = 2
-@export var spawn_chance_per_attempt: float = 0.6
+@export var spawn_chance_per_attempt: float = 0.9
+@export var pedestrian_spawn_chance: float = 0.45 
 
 @onready var left_slot: Marker3D = $LeftSlot
 @onready var right_slot: Marker3D = $RightSlot
 
-# We still use these to know the exact X-axis (left/right track coordinates)
+# 4 Driving Lanes for Cars
 @onready var lane_far_left: Marker3D = $LaneFarLeft
 @onready var lane_mid_left: Marker3D = $LaneMidLeft
 @onready var lane_mid_right: Marker3D = $LaneMidRight
 @onready var lane_far_right: Marker3D = $LaneFarRight
+
+# --- NEW: Dedicated Pedestrian Lanes (Outside the yellow lines) ---
+@onready var lane_peds_left: Marker3D = $LanePedsLeft
+@onready var lane_peds_right: Marker3D = $LanePedsRight
 
 var incoming_lanes: Array[Marker3D]
 var outgoing_lanes: Array[Marker3D]
@@ -26,14 +32,33 @@ func _ready() -> void:
 		spawn_building_at_slot(left_slot, 90.0)
 		spawn_building_at_slot(right_slot, -90.0)
 
-# --- CRITICAL FIX: We pass the target z_position from the world spawner! ---
 func generate_4lane_traffic(horizon_z: float) -> void:
+	var available_incoming = incoming_lanes.duplicate()
+	var available_outgoing = outgoing_lanes.duplicate()
+	
+	# ==========================================
+	# 1. SPAWN PEDESTRIANS (Dedicated Lanes Only)
+	# ==========================================
+	if not pedestrian_scenes.is_empty() and randf() <= pedestrian_spawn_chance:
+		# Flip a coin: Left sidewalk or Right sidewalk?
+		var spawn_on_left: bool = randf() > 0.5
+		
+		# Assign to the dedicated pedestrian markers
+		var ped_lane: Marker3D = lane_peds_left if spawn_on_left else lane_peds_right
+			
+		var ped_instance = pedestrian_scenes.pick_random().instantiate()
+		get_tree().current_scene.add_child(ped_instance)
+		
+		# Snap to the exact sidewalk coordinate
+		ped_instance.global_position = Vector3(ped_lane.global_position.x, 0.1, horizon_z)
+
+	# ==========================================
+	# 2. SPAWN CARS (4 Driving Lanes)
+	# ==========================================
 	if obstacle_scenes.is_empty():
 		return
 		
 	var spawn_attempts = randi_range(1, max_cars_per_tile)
-	var available_incoming = incoming_lanes.duplicate()
-	var available_outgoing = outgoing_lanes.duplicate()
 	
 	for i in range(spawn_attempts):
 		if randf() > spawn_chance_per_attempt:
@@ -60,13 +85,8 @@ func generate_4lane_traffic(horizon_z: float) -> void:
 		var random_car_variant: PackedScene = obstacle_scenes.pick_random()
 		var car_instance = random_car_variant.instantiate()
 		
-		# Attach to main scene root so it doesn't delete with the tile
 		get_tree().current_scene.add_child(car_instance)
 		
-		# --- THE FIXED POSITION MATH ---
-		# X: Take the clean lateral coordinate of the marker lane
-		# Y: Keep it grounded on the asphalt floor
-		# Z: Explicitly force it to spawn at the true horizon coordinate passed from the spawner
 		var spawn_x = target_lane.global_position.x
 		var random_z_stagger = randf_range(-1.2, 1.2)
 		
