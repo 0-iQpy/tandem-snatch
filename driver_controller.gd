@@ -4,14 +4,13 @@ extends CharacterBody3D
 @export var x_limit: float = 4.0
 @export var max_steer_angle: float = 25.0 
 @export var wheel_spin_speed: float = 18.0 
-# Drag your FuelGauge node into this slot in the Inspector!
 @export var fuel_gauge: ProgressBar
 
 # ==========================================
 # --- CRASH & FUEL PENALTY VARIABLES ---
 # ==========================================
-@export var crash_fuel_penalty: float = 20.0 # How much gas is instantly lost on impact
-@export var invincibility_duration: float = 1.5 # Seconds of safety after a crash
+@export var crash_fuel_penalty: float = 20.0 
+@export var invincibility_duration: float = 1.5 
 var is_invincible: bool = false
 
 @export var camera: Camera3D 
@@ -23,16 +22,28 @@ var is_recovering: bool = false
 @export var wheel_f: Node3D
 @export var wheel_r: Node3D
 
-
-# --- ADD THIS VARIABLE TO YOUR QTE SECTION ---
+# --- QTE VARIABLES ---
 var current_required_action: String = ""
 var all_qte_actions: Array[String] = ["ui_up", "ui_down", "ui_left", "ui_right"]
+
+@export var qte_duration: float = 1.0         
+@export var perfect_threshold: float = 0.05   
+@export var good_threshold: float = 0.15      
+var qte_timer: float = 0
+var _qte_accepting_input: bool = false 
+
 # ==========================================
-# --- QTE & FUEL ECONOMY VARIABLES ---
+# --- FUEL ECONOMY & SHOP VARIABLES ---
 # ==========================================
 @export var max_fuel: float = 100.0
-@export var base_fuel_drain: float = 6.0 # Fuel lost per second
-@export var nitro_multiplier: float = 2.0 # 2x drain when Nitro is active
+@export var base_fuel_drain: float = 6.0 
+@export var nitro_multiplier: float = 2.0 
+
+@export_group("Gas Station Economy")
+@export var gas_refill_price: int = 500       # Costs 300 cash per refill
+@export var gas_refill_amount: float = 40.0   # Restores 40% gas
+@export var gas_purchase_cooldown: float = 5.0 # Wait 5 seconds between refills
+var _gas_cooldown_timer: float = 0.0
 
 var current_fuel: float = 100.0
 var is_nitro_active: bool = false
@@ -44,71 +55,64 @@ var heat: float = 0.0
 var max_heat: float = 100.0
 var hud = null
 
-@export var snatch_fuel_reward: float = 35.0
 @export var stumble_penalty_time: float = 2.0
-
 var active_pedestrian: Area3D = null
 var is_in_qte_window: bool = false
 var is_stumbling: bool = false
-var qte_timer: float = 0.0
-var qte_duration: float = 2.0 # Player has 2.0 seconds to react
-var _qte_accepting_input: bool = false # True only after HUD pop-in finishes
 
-# Make sure your Area3D is exactly named "SnatchZone" in the scene tree!
 @onready var snatch_zone: Area3D = $SnatchZone 
 
 func _ready() -> void:
 	current_fuel = max_fuel
 	
-	# Automatically locate the HUD node in the scene tree
 	hud = get_parent().get_node_or_null("HUD")
 	if not hud:
 		hud = get_tree().current_scene.get_node_or_null("HUD")
 		
-	# Connect the SnatchZone signals automatically via code
 	if snatch_zone:
 		snatch_zone.area_entered.connect(_on_snatch_zone_entered)
 		snatch_zone.area_exited.connect(_on_snatch_zone_exited)
 		
-	# Initialize HUD stats
 	if hud:
 		hud.update_gas(current_fuel, max_fuel, false)
 		hud.update_loot(0, 0)
 		hud.update_heat(0.0, max_heat)
+		hud.update_gas_shop(gas_refill_price, 0.0, gas_purchase_cooldown)
 
 func _physics_process(delta: float) -> void:
-	# ------------------------------------------
-	# RESET & NITRO INPUT LISTENERS
-	# ------------------------------------------
+	# 1. RESET & NITRO INPUT LISTENERS
 	if Input.is_key_pressed(KEY_R):
 		reset_game()
 		return
 			
 	if not is_busted:
-		# Nitro is active when Shift is held down
 		is_nitro_active = Input.is_key_pressed(KEY_SHIFT)
-		var target_speed = 15.0 if is_nitro_active else 5.0 # Boost highway scrolling speed
-		
-		# 1. Determine the target FOV based on nitro state
+		var target_speed = 15.0 if is_nitro_active else 5.0 
 		var target_fov = 100.0 if is_nitro_active else 75.0
 		
-		# 2. Smoothly transition CURRENT fov to the TARGET fov
 		camera.fov = lerpf(camera.fov, target_fov, 8.0 * delta)
 		
 		if is_invincible:
-			target_speed = maxf(1.0, target_speed - 4.0) # Apply speed penalty gracefully
+			target_speed = maxf(1.0, target_speed - 4.0) 
 			
 		Global.road_speed = lerpf(Global.road_speed, target_speed, 4.0 * delta)
-		
 	else:
 		is_nitro_active = false
 		
-	# ------------------------------------------
-	# FUEL DRAIN & QTE TRACKER
-	# ------------------------------------------
+	# 2. FUEL DRAIN & COOLDOWNS
 	if not is_busted:
 		var current_drain = base_fuel_drain * (nitro_multiplier if is_nitro_active else 1.0)
 		current_fuel -= current_drain * delta
+		
+		# Process Shop Cooldown
+		if _gas_cooldown_timer > 0.0:
+			_gas_cooldown_timer = maxf(0.0, _gas_cooldown_timer - delta)
+			if hud:
+				hud.update_gas_shop(gas_refill_price, _gas_cooldown_timer, gas_purchase_cooldown)
+				
+		# Check Gas Purchase Input
+		if Input.is_action_just_pressed("buy_gas"):
+			_handle_gas_purchase()
 		
 		if hud:
 			hud.update_gas(current_fuel, max_fuel, is_nitro_active)
@@ -117,22 +121,16 @@ func _physics_process(delta: float) -> void:
 		if current_fuel <= 0.0:
 			trigger_busted_sequence()
 			if hud:
-				hud.show_game_over(false) # Out of Gas game over
-			
+				hud.show_game_over(false) 
 
-
-	# ------------------------------------------
-	# MOTORCYCLE MOVEMENT (Disabled if busted!)
-	# ------------------------------------------
+	# 3. MOTORCYCLE MOVEMENT
 	var input_dir := 0.0
-	
 	if not is_busted:
 		if Input.is_action_pressed("steer_left"):
 			input_dir -= 1.0
 		if Input.is_action_pressed("steer_right"):
 			input_dir += 1.0
 		
-	# 1. LATERAL MOVEMENT
 	velocity.x = input_dir * steer_speed
 	velocity.z = 0.0
 	move_and_slide()
@@ -144,49 +142,43 @@ func _physics_process(delta: float) -> void:
 		position.x = x_limit
 		velocity.x = 0.0
 		
+	# 4. QTE INPUT LISTENER & ANTI-MASHING
 	if not is_busted and is_in_qte_window and not is_stumbling:
-		if _qte_accepting_input:
+		if not _qte_accepting_input:
+			for action in all_qte_actions:
+				if Input.is_action_just_pressed(action):
+					miss_snatch("FALSE START! DON'T MASH!")
+					break
+		else:
 			qte_timer += delta
 			if hud:
 				hud.update_qte_timer(qte_duration - qte_timer)
 			
-			# Debug: print timer every ~0.25s
-			if int(qte_timer / 0.25) != int((qte_timer - delta) / 0.25):
-				print("DEBUG QTE tick | timer=%.2f / %.2f" % [qte_timer, qte_duration])
-			
-			# Check if the user pressed ANY of the 4 directional keys
 			for action in all_qte_actions:
 				if Input.is_action_just_pressed(action):
-					print("DEBUG key pressed: ", action, " | required: ", current_required_action, " | timer=%.3f" % qte_timer)
 					if action == current_required_action:
-						# CORRECT KEY PRESSED! Evaluate timing accuracy!
 						evaluate_snatch_attempt()
 					else:
-						# WRONG KEY PRESSED! Instant punishment!
 						miss_snatch("WRONG ARROW KEY!")
-					break # Stop checking other keys this frame
+					break
 			
 			if qte_timer >= qte_duration:
-				print("DEBUG QTE expired | timer=%.3f" % qte_timer)
 				miss_snatch("TOO LATE!")
 
-
-	# 2. HANDLEBAR STEERING
+	# 5. HANDLEBAR STEERING & TILT
 	var target_steer = -input_dir * max_steer_angle
 	if fork:
 		fork.rotation_degrees.z = lerp(fork.rotation_degrees.z, target_steer, 5.0 * delta)
-
-	# 3. CHASSIS TILT
 	rotation_degrees.z = lerp(rotation_degrees.z, -input_dir * 15.0, 10.0 * delta)
 
-	# 4. SPIN THE WHEELS (Slows down to a stop if busted)
+	# 6. SPIN THE WHEELS
 	var current_spin = wheel_spin_speed if not is_busted else 0.0
 	if wheel_f:
 		wheel_f.rotation_degrees.y -= current_spin * 360.0 * delta
 	if wheel_r:
 		wheel_r.rotation_degrees.y -= current_spin * 360.0 * delta
 
-	# --- ARCADE SCREEN SHAKE JUICE ---
+	# 7. SCREEN SHAKE JUICE
 	if current_shake_strength > 0.0:
 		current_shake_strength = lerpf(current_shake_strength, 0.0, shake_decay * delta)
 		if camera:
@@ -195,6 +187,44 @@ func _physics_process(delta: float) -> void:
 	elif camera and (camera.h_offset != 0.0 or camera.v_offset != 0.0):
 		camera.h_offset = 0.0
 		camera.v_offset = 0.0
+
+# ==========================================
+# --- GAS SHOP LOGIC ---
+# ==========================================
+func _handle_gas_purchase() -> void:
+	if is_busted:
+		return
+		
+	# Check Cooldown
+	if _gas_cooldown_timer > 0.0:
+		if hud:
+			hud.show_feedback("⏳ GAS COOLDOWN! Wait %.1fs ⏳" % _gas_cooldown_timer, Color.ORANGE, 1.0)
+		return
+		
+	# Check Cash
+	if cash < gas_refill_price:
+		if hud:
+			hud.show_feedback("❌ NOT ENOUGH CASH! Needs ₱%d ❌" % gas_refill_price, Color.RED, 1.2)
+		return
+		
+	# Check Tank Fullness
+	if current_fuel >= max_fuel:
+		if hud:
+			hud.show_feedback("⚠️ GAS TANK ALREADY FULL! ⚠️", Color.YELLOW, 1.0)
+		return
+		
+	# Process Transaction
+	cash -= gas_refill_price
+	current_fuel = minf(current_fuel + gas_refill_amount, max_fuel)
+	_gas_cooldown_timer = gas_purchase_cooldown
+	
+	print("BOUGHT GAS! -₱%d | Added +%d Gas" % [gas_refill_price, gas_refill_amount])
+	
+	if hud:
+		hud.update_loot(cash, 0)
+		hud.update_gas(current_fuel, max_fuel, is_nitro_active)
+		hud.update_gas_shop(gas_refill_price, _gas_cooldown_timer, gas_purchase_cooldown)
+		hud.show_feedback("⛽ REFILLED GAS! -₱%d (+40%%) ⛽" % gas_refill_price, Color.CYAN, 2.0)
 
 # ==========================================
 # --- COLLISION & DAMAGE ---
@@ -208,106 +238,98 @@ func apply_screen_shake(strength: float = 0.4) -> void:
 	current_shake_strength = strength
 
 func take_crash_penalty() -> void:
-	# Ignore hits if we are already out of gas or currently invincible!
 	if is_busted or is_invincible:
 		return
 		
-	print("CRASH DEBRIS! Lost ", crash_fuel_penalty, " Fuel!")
-	
-	# 1. INSTANT FUEL DEDUCTION
 	current_fuel = maxf(0.0, current_fuel - crash_fuel_penalty)
-	heat = minf(heat + 10.0, max_heat) # Crashing attracts police attention
+	heat = minf(heat + 10.0, max_heat) 
 	if hud:
 		hud.update_gas(current_fuel, max_fuel, is_nitro_active)
 		hud.update_heat(heat, max_heat)
 		hud.show_feedback("💥 CRASHED! -20 FUEL 💥", Color.CORAL, 1.5)
 	
-	# 2. HEAVY SCREEN SHAKE JUICE
 	apply_screen_shake(0.5) 
 	
-	# 3. CHECK FOR INSTANT GAME OVER
 	if current_fuel <= 0.0:
 		trigger_busted_sequence()
 		if hud:
-			hud.show_game_over(true) # True = Busted/Crashed Out
+			hud.show_game_over(true) 
 		return
 		
-	# 4. TRIGGER MERCY INVINCIBILITY & SPEED PENALTY
 	start_crash_recovery()
 
 func start_crash_recovery() -> void:
 	is_invincible = true
-	
-	# The speed penalty is handled gracefully via target_speed interpolation in _physics_process()
-	
-	# Wait for the safety window to expire
 	await get_tree().create_timer(invincibility_duration).timeout
-	
 	is_invincible = false
-	print("RECOVERED - Vulnerable to impacts again!")
+
 # ==========================================
-# --- QTE SNATCH LOGIC ---
+# --- QTE SNATCH LOGIC (DECOUPLED FROM GAS) ---
 # ==========================================
-func _on_snatch_zone_entered(area: Area3D) -> void:
-	if is_stumbling or is_busted:
+func _on_snatch_zone_exited(area: Area3D) -> void:
+	if area != active_pedestrian:
 		return
+		
+	if hud and hud.qte_ready.is_connected(_on_qte_hud_ready):
+		hud.qte_ready.disconnect(_on_qte_hud_ready)
+		
+	is_in_qte_window = false
+	active_pedestrian = null
+	current_required_action = ""
+	_qte_accepting_input = false
+	if hud:
+		hud.hide_qte()
+
+func _on_snatch_zone_entered(area: Area3D) -> void:
+	if is_stumbling or is_busted or is_in_qte_window:
+		return
+		
 	active_pedestrian = area
 	is_in_qte_window = true
-	qte_timer = 0.0
+	_qte_accepting_input = false 
 	
-	# GRAB THE PEDESTRIAN'S RANDOM REQUIRED ARROW KEY!
 	if area.get("required_action") != null:
 		current_required_action = area.required_action
-		print("QTE ZONE ENTERED | required=", current_required_action, " | is_stumbling=", is_stumbling)
-		_qte_accepting_input = false # Block input until HUD signals ready
 		if hud:
 			hud.start_qte(current_required_action, qte_duration)
 			hud.qte_ready.connect(_on_qte_hud_ready, CONNECT_ONE_SHOT)
 
-func _on_snatch_zone_exited(area: Area3D) -> void:
-	if area == active_pedestrian:
-		print("DEBUG zone exited | cleanly closing QTE overlay")
-		is_in_qte_window = false
-		active_pedestrian = null
-		current_required_action = ""
-		_qte_accepting_input = false
-		if hud:
-			hud.hide_qte()
-
 func _on_qte_hud_ready():
-	# HUD pop-in finished — input is now live
-	_qte_accepting_input = true
-	print("DEBUG QTE READY | input now live | qte_timer reset to 0")
-	qte_timer = 0.0 # Reset timer here so it starts from the moment input is live
+	if is_in_qte_window and not is_stumbling:
+		_qte_accepting_input = true
+		qte_timer = 0.0 
 
 func evaluate_snatch_attempt() -> void:
 	is_in_qte_window = false
 	
-	# Score based on REACTION SPEED: how quickly did the player press after the prompt appeared?
-	# qte_timer counts up from 0 once the HUD is ready, so lower = faster reaction.
-	print("DEBUG evaluate_snatch_attempt | qte_timer=%.3f | qte_duration=%.3f" % [qte_timer, qte_duration])
-	
-	if qte_timer <= 0.4:
-		print("PERFECT SNATCH! Reaction time: %.3fs" % qte_timer)
-		refuel(snatch_fuel_reward * 1.2)
+	# --- TIER 1: PERFECT SNATCH (< 0.05s) ---
+	if qte_timer <= perfect_threshold:
 		cash += 500
 		heat = min(heat + 15.0, max_heat)
 		if hud:
 			hud.update_loot(cash, 500)
 			hud.update_heat(heat, max_heat)
-			hud.show_feedback("⚡ PERFECT SNATCH! +₱500 ⚡", Color.GOLD, 1.8)
-		successful_snatch_cleanup()
-	else:
-		print("GOOD SNATCH! Reaction time: %.3fs" % qte_timer)
-		refuel(snatch_fuel_reward)
+			hud.show_qte_feedback("⚡ PERFECT SNATCH! +₱500 ⚡", Color.GOLD, 1.5)
+			
+	# --- TIER 2: GOOD SNATCH (0.05s to 0.15s) ---
+	elif qte_timer <= good_threshold:
 		cash += 250
 		heat = min(heat + 10.0, max_heat)
 		if hud:
 			hud.update_loot(cash, 250)
 			hud.update_heat(heat, max_heat)
-			hud.show_feedback("💰 GOOD SNATCH! +₱250 💰", Color.SPRING_GREEN, 1.8)
-		successful_snatch_cleanup()
-
+			hud.show_qte_feedback("💰 GOOD SNATCH! +₱250 💰", Color.SPRING_GREEN, 1.5)
+			
+	# --- TIER 3: SLOPPY / LATE SNATCH (> 0.15s) ---
+	else:
+		cash += 100
+		heat = min(heat + 5.0, max_heat)
+		if hud:
+			hud.update_loot(cash, 100)
+			hud.update_heat(heat, max_heat)
+			hud.show_qte_feedback("⚠️ SLOPPY GRAB! +₱100 ⚠️", Color.YELLOW, 1.5)
+			
+	successful_snatch_cleanup()
 
 func successful_snatch_cleanup() -> void:
 	if active_pedestrian:
@@ -318,7 +340,6 @@ func successful_snatch_cleanup() -> void:
 		hud.hide_qte()
 
 func miss_snatch(reason: String) -> void:
-	print("SNATCH FAILED: ", reason, " - STUMBLE PENALTY ACTIVE!")
 	is_in_qte_window = false
 	is_stumbling = true
 	_qte_accepting_input = false
@@ -326,24 +347,16 @@ func miss_snatch(reason: String) -> void:
 	current_required_action = ""
 	
 	if hud:
-		hud.show_feedback("❌ SNATCH FAILED: " + reason + " ❌", Color.RED, 1.8)
+		hud.show_qte_feedback("❌ SNATCH FAILED: " + reason + " ❌", Color.RED, 1.5)
 		hud.hide_qte()
 	
-	# Lock out the snatch mechanic for 2 seconds
 	await get_tree().create_timer(stumble_penalty_time).timeout
 	is_stumbling = false
-	print("RECOVERED FROM STUMBLE - SNATCH READY!")
-
-func refuel(amount: float) -> void:
-	current_fuel = min(current_fuel + amount, max_fuel)
 
 func trigger_busted_sequence() -> void:
 	is_busted = true
 	current_fuel = 0.0
-	print("GAME OVER - BUSTED!")
 	apply_screen_shake(0.8) 
-	
-	# Stop the world from moving
 	Global.road_speed = 0.0
 	
 func reset_game() -> void:
@@ -351,6 +364,7 @@ func reset_game() -> void:
 	is_busted = false
 	cash = 0
 	heat = 0.0
+	_gas_cooldown_timer = 0.0
 	is_nitro_active = false
 	is_invincible = false
 	is_stumbling = false
@@ -358,11 +372,9 @@ func reset_game() -> void:
 	active_pedestrian = null
 	Global.road_speed = 5.0
 	
-	# Clear active traffic and pedestrians
 	get_tree().call_group("obstacles", "queue_free")
 	get_tree().call_group("pedestrians", "queue_free")
 	
-	# Reset world spawner road segments
 	var world_spawner = get_parent().get_node_or_null("WorldSpawner")
 	if world_spawner and world_spawner.has_method("reset_spawner"):
 		world_spawner.call("reset_spawner")
@@ -374,5 +386,4 @@ func reset_game() -> void:
 		hud.update_gas(current_fuel, max_fuel, false)
 		hud.update_loot(0, 0)
 		hud.update_heat(0.0, max_heat)
-		
-	print("GAME RESET - START RUN!")
+		hud.update_gas_shop(gas_refill_price, 0.0, gas_purchase_cooldown)
