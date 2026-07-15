@@ -3,6 +3,8 @@ extends Node3D
 @export var building_scenes: Array[PackedScene]
 @export var obstacle_scenes: Array[PackedScene]
 @export var pedestrian_scenes: Array[PackedScene] 
+# --- NEW: Police System ---
+@export var police_scenes: Array[PackedScene]
 
 @export var max_cars_per_tile: int = 2
 @export var spawn_chance_per_attempt: float = 0.9
@@ -40,32 +42,75 @@ func generate_4lane_traffic(horizon_z: float) -> void:
 	# 1. SPAWN PEDESTRIANS (Dedicated Lanes Only)
 	# ==========================================
 	if not pedestrian_scenes.is_empty() and randf() <= pedestrian_spawn_chance:
-		# Flip a coin: Left sidewalk or Right sidewalk?
 		var spawn_on_left: bool = randf() > 0.5
-		
-		# Assign to the dedicated pedestrian markers
 		var ped_lane: Marker3D = lane_peds_left if spawn_on_left else lane_peds_right
-			
 		var ped_instance = pedestrian_scenes.pick_random().instantiate()
 		get_tree().current_scene.add_child(ped_instance)
-		
-		# Snap to the exact sidewalk coordinate
 		ped_instance.global_position = Vector3(ped_lane.global_position.x, 0.1, horizon_z)
 
 	# ==========================================
-	# 2. SPAWN CARS (4 Driving Lanes)
+	# 2. POLICE HEAT FULL - SPAWN SWERVING COPS!
+	# ==========================================
+	if Global.is_police_heat_full and not police_scenes.is_empty():
+		var spawn_attempts = randi_range(1, max_cars_per_tile)
+		
+		for i in range(spawn_attempts):
+			if randf() > spawn_chance_per_attempt:
+				continue
+				
+			var spawn_incoming: bool = randf() > 0.5
+			
+			if spawn_incoming and available_incoming.size() <= 1:
+				spawn_incoming = false
+			elif not spawn_incoming and available_outgoing.size() <= 1:
+				spawn_incoming = true
+				
+			if available_incoming.size() <= 1 and available_outgoing.size() <= 1:
+				break
+				
+			var target_lane: Marker3D
+			if spawn_incoming:
+				target_lane = available_incoming.pick_random()
+				available_incoming.erase(target_lane)
+			else:
+				target_lane = available_outgoing.pick_random()
+				available_outgoing.erase(target_lane)
+				
+			# Pick from police_scenes instead of obstacle_scenes!
+			var random_police_variant: PackedScene = police_scenes.pick_random()
+			var police_instance = random_police_variant.instantiate()
+			
+			police_instance.add_to_group("obstacles")
+			get_tree().current_scene.add_child.call_deferred(police_instance)
+			
+			var spawn_x = target_lane.global_position.x
+			var random_z_stagger = randf_range(-1.2, 1.2)
+			
+			police_instance.position = Vector3(spawn_x, 0.1, horizon_z + random_z_stagger)
+			
+			if spawn_incoming:
+				police_instance.rotation_degrees.y = 0.0
+				if police_instance.has_method("set_incoming"):
+					police_instance.call("set_incoming", true)
+			else:
+				police_instance.rotation_degrees.y = 180.0
+				if police_instance.has_method("set_incoming"):
+					police_instance.call("set_incoming", false)
+					
+		# Return early so civilian cars don't spawn on top of the police chase!
+		return
+	# ==========================================
+	# 3. NORMAL CAR SPAWNING (4 Driving Lanes)
 	# ==========================================
 	if obstacle_scenes.is_empty():
 		return
 		
 	var spawn_attempts = randi_range(1, max_cars_per_tile)
-	
 	for i in range(spawn_attempts):
 		if randf() > spawn_chance_per_attempt:
 			continue
 			
 		var spawn_incoming: bool = randf() > 0.5
-		
 		if spawn_incoming and available_incoming.size() <= 1:
 			spawn_incoming = false
 		elif not spawn_incoming and available_outgoing.size() <= 1:
@@ -84,13 +129,11 @@ func generate_4lane_traffic(horizon_z: float) -> void:
 			
 		var random_car_variant: PackedScene = obstacle_scenes.pick_random()
 		var car_instance = random_car_variant.instantiate()
-		
 		car_instance.add_to_group("obstacles")
 		get_tree().current_scene.add_child.call_deferred(car_instance)
 		
 		var spawn_x = target_lane.global_position.x
 		var random_z_stagger = randf_range(-1.2, 1.2)
-		
 		car_instance.position = Vector3(spawn_x, 0.1, horizon_z + random_z_stagger)
 		
 		if spawn_incoming:
@@ -101,7 +144,6 @@ func generate_4lane_traffic(horizon_z: float) -> void:
 			car_instance.rotation_degrees.y = 180.0
 			if car_instance.has_method("set_incoming"):
 				car_instance.call("set_incoming", false)
-
 func spawn_building_at_slot(slot: Marker3D, y_rotation_deg: float) -> void:
 	var random_scene: PackedScene = building_scenes.pick_random()
 	var building_instance := random_scene.instantiate()

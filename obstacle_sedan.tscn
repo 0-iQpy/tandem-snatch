@@ -15,5 +15,5 @@ script = ExtResource("1_gb2w0")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.152, 0)
 shape = SubResource("BoxShape3D_w8byt")
 
-[node name="car_sedan" parent="." instance=ExtResource("1_q7072")]
+[node name="car_sedan" parent="." groups=["obstacles"] instance=ExtResource("1_q7072")]
 transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)

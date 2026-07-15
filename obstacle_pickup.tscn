@@ -6,7 +6,7 @@
 [sub_resource type="BoxShape3D" id="BoxShape3D_w8byt"]
 size = Vector3(0.75, 0.371, 1)
 
-[node name="ObstacleSedan" type="Area3D" groups=["obstacles"]]
+[node name="ObstaclePickup" type="Area3D" groups=["obstacles"]]
 collision_layer = 4
 collision_mask = 0
 script = ExtResource("1_b7vpu")

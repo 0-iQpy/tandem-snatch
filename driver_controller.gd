@@ -36,7 +36,7 @@ var _qte_accepting_input: bool = false
 # --- FUEL ECONOMY & SHOP VARIABLES ---
 # ==========================================
 @export var max_fuel: float = 100.0
-@export var base_fuel_drain: float = 6.0 
+@export var base_fuel_drain: float = 0.0 
 @export var nitro_multiplier: float = 2.0 
 
 @export_group("Gas Station Economy")
@@ -63,6 +63,7 @@ var is_stumbling: bool = false
 @onready var snatch_zone: Area3D = $SnatchZone 
 
 func _ready() -> void:
+	add_to_group("player")
 	current_fuel = max_fuel
 	
 	hud = get_parent().get_node_or_null("HUD")
@@ -263,9 +264,9 @@ func take_crash_penalty() -> void:
 	heat = minf(heat + 10.0, max_heat) 
 	if hud:
 		hud.update_gas(current_fuel, max_fuel, is_nitro_active)
-		hud.update_heat(heat, max_heat)
+		
 		hud.show_feedback("💥 CRASHED! -20 FUEL 💥", Color.CORAL, 1.5)
-	
+	add_heat(10.0)
 	apply_screen_shake(0.5) 
 	
 	var audio_mgr = get_node_or_null("/root/AudioManager")
@@ -333,10 +334,11 @@ func evaluate_snatch_attempt() -> void:
 	# --- TIER 1: PERFECT SNATCH ---
 	if qte_timer <= perfect_threshold:
 		cash += 500
-		heat = min(heat + 15.0, max_heat)
+		
+		add_heat(15.0)
 		if hud:
 			hud.update_loot(cash, 500)
-			hud.update_heat(heat, max_heat)
+			
 			hud.show_qte_feedback("⚡ PERFECT SNATCH! +₱500 ⚡", Color.GOLD, 1.5)
 			
 			# 🦾 Reaches left or right based on physical 3D position!
@@ -345,10 +347,10 @@ func evaluate_snatch_attempt() -> void:
 	# --- TIER 2: GOOD SNATCH ---
 	elif qte_timer <= good_threshold:
 		cash += 250
-		heat = min(heat + 10.0, max_heat)
+		add_heat(100.0)
 		if hud:
 			hud.update_loot(cash, 250)
-			hud.update_heat(heat, max_heat)
+			
 			hud.show_qte_feedback("💰 GOOD SNATCH! +₱250 💰", Color.SPRING_GREEN, 1.5)
 			
 			# 🦾 Reaches left or right based on physical 3D position!
@@ -357,10 +359,10 @@ func evaluate_snatch_attempt() -> void:
 	# --- TIER 3: SLOPPY / LATE SNATCH ---
 	else:
 		cash += 100
-		heat = min(heat + 5.0, max_heat)
+		add_heat(5.0)
 		if hud:
 			hud.update_loot(cash, 100)
-			hud.update_heat(heat, max_heat)
+			
 			hud.show_qte_feedback("⚠️ SLOPPY GRAB! +₱100 ⚠️", Color.YELLOW, 1.5)
 			
 			# Uncomment if you want sloppy snatches to trigger the hand animation too:
@@ -401,6 +403,7 @@ func reset_game() -> void:
 	is_busted = false
 	cash = 0
 	heat = 0.0
+	Global.is_police_heat_full = false
 	_gas_cooldown_timer = 0.0
 	is_nitro_active = false
 	is_invincible = false
@@ -429,3 +432,28 @@ func reset_game() -> void:
 	var audio_mgr = get_node_or_null("/root/AudioManager")
 	if audio_mgr:
 		audio_mgr.play_bgm("game")
+
+# ==========================================
+# --- CENTRAL HEAT & POLICE MANAGER ---
+# ==========================================
+func add_heat(amount: float) -> void:
+	if is_busted:
+		return
+		
+	# Increase heat and clamp it between 0 and max_heat
+	heat = clampf(heat + amount, 0.0, max_heat)
+	
+	# Update the HUD
+	if hud:
+		hud.update_heat(heat, max_heat)
+		
+	# Check if Heat is MAXED OUT!
+	if heat >= max_heat and not Global.is_police_heat_full:
+		Global.is_police_heat_full = true
+		
+		# Optional: Play a police siren sound or show a huge HUD warning!
+		if hud:
+			hud.show_feedback("🚨 POLICE ROADBLOCKS INCOMING! 🚨", Color.RED, 2.5)
+		var audio_mgr = get_node_or_null("/root/AudioManager")
+		if audio_mgr and audio_mgr.has_method("play_sfx"):
+			audio_mgr.play_sfx("police_siren")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://03sxxu8dfj2w"]
+[gd_scene load_steps=13 format=3 uid="uid://03sxxu8dfj2w"]
 
 [ext_resource type="Script" uid="uid://k85u7uj137t8" path="res://road_module.gd" id="1_dnxgn"]
 [ext_resource type="PackedScene" uid="uid://cr47t7ne50x40" path="res://buildings/building1.fbx" id="2_jgtwr"]
@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://drtcwq77s488f" path="res://buildings/building5.fbx" id="6_2a4jm"]
 [ext_resource type="PackedScene" uid="uid://bkl3rqt7dl1kl" path="res://buildings/building6.fbx" id="7_l442v"]
 [ext_resource type="PackedScene" uid="uid://dvl1h18pyeaem" path="res://obstacle_pickup.tscn" id="10_abvkv"]
+[ext_resource type="PackedScene" uid="uid://tkqa62n6wpci" path="res://obstacle_police.tscn" id="11_abvkv"]
 [ext_resource type="PackedScene" uid="uid://72b1fn0muf44" path="res://obstacle_sedan.tscn" id="11_ma3no"]
 [ext_resource type="PackedScene" uid="uid://csjv1j13c1w32" path="res://KayKit_City_Builder_Bits_1.0_FREE/Assets/fbx/ROAD.fbx" id="12_abvkv"]
 [ext_resource type="PackedScene" uid="uid://bmggbfs06asxh" path="res://pedestrian.tscn" id="12_ma3no"]
@@ -15,8 +16,9 @@
 [node name="RoadModule" type="Node3D"]
 script = ExtResource("1_dnxgn")
 building_scenes = Array[PackedScene]([ExtResource("2_jgtwr"), ExtResource("3_abvkv"), ExtResource("4_ma3no"), ExtResource("5_gi5fo"), ExtResource("6_2a4jm"), ExtResource("7_l442v")])
-obstacle_scenes = Array[PackedScene]([ExtResource("11_ma3no"), ExtResource("10_abvkv")])
+obstacle_scenes = Array[PackedScene]([ExtResource("10_abvkv"), ExtResource("11_ma3no")])
 pedestrian_scenes = Array[PackedScene]([ExtResource("12_ma3no")])
+police_scenes = Array[PackedScene]([ExtResource("11_abvkv")])
 max_cars_per_tile = 1
 spawn_chance_per_attempt = 0.6
 

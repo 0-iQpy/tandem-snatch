@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://tkqa62n6wpci"]
+
+[ext_resource type="Script" uid="uid://da0x3s2u6ea27" path="res://police_car.gd" id="1_tkgf0"]
+[ext_resource type="PackedScene" uid="uid://dukhxg51bsdu3" path="res://KayKit_City_Builder_Bits_1.0_FREE/Assets/fbx/car_police.fbx" id="2_tkgf0"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_w8byt"]
+size = Vector3(0.75, 0.371, 1)
+
+[node name="ObstaclePolice" type="Area3D" groups=["obstacles", "police"]]
+collision_layer = 4
+collision_mask = 0
+script = ExtResource("1_tkgf0")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.152, 0)
+shape = SubResource("BoxShape3D_w8byt")
+
+[node name="car_police" parent="." instance=ExtResource("2_tkgf0")]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 0, 0, 0)
