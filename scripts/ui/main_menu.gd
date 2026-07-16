@@ -76,7 +76,7 @@ func _on_play_pressed() -> void:
 	play_button.release_focus()
 	
 	Audio.stop_bgm()
-	Audio.play_bgm(preload("res://assets/bgm/main.mp3"))
+	Audio.play_bgm(preload("res://assets/bgm/main.mp3"), -20)
 	# Fade-out screen transition
 	var tween = create_tween()
 	tween.tween_property(transition_overlay, "color:a", 1.0, 0.5)

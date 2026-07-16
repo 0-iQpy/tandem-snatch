@@ -42,7 +42,7 @@ var _qte_accepting_input: bool = false
 @export_group("Gas Station Economy")
 @export var gas_refill_price: int = 500        # Costs 300 cash per refill
 @export var gas_refill_amount: float = 40.0    # Restores 40% gas
-@export var gas_purchase_cooldown: float = 3.0 # Wait 5 seconds between refills
+@export var gas_purchase_cooldown: float = 5.0 # Wait 5 seconds between refills
 var _gas_cooldown_timer: float = 0.0
 
 var current_fuel: float = 100.0
@@ -54,7 +54,7 @@ var cash: int = 0
 var heat: float = 0.0
 var max_heat: float = 100.0
 var hud = null
-
+var motor_audio: AudioStreamPlayer = null
 # --- POLICE EVASION VARIABLES ---
 @export var full_heat_duration: float = 15.0 # How many seconds the police chase lasts
 
@@ -68,7 +68,7 @@ var is_stumbling: bool = false
 func _ready() -> void:
 	add_to_group("player")
 	current_fuel = max_fuel
-	
+	play_motor_sound()
 	hud = get_parent().get_node_or_null("HUD")
 	if not hud:
 		hud = get_tree().current_scene.get_node_or_null("HUD")
@@ -106,6 +106,8 @@ func _physics_process(delta: float) -> void:
 		is_nitro_active = Input.is_key_pressed(KEY_SHIFT)
 		var target_speed = 15.0 if is_nitro_active else 5.0 
 		var target_fov = 100.0 if is_nitro_active else 75.0
+		var target_volume = 20 if is_nitro_active else 5
+		motor_audio.volume_db = target_volume
 		
 		camera.fov = lerpf(camera.fov, target_fov, 8.0 * delta)
 		if hud:
@@ -140,6 +142,7 @@ func _physics_process(delta: float) -> void:
 			
 		if current_fuel <= 0.0:
 			trigger_busted_sequence()
+			
 			if hud:
 				hud.show_game_over(false) 
 	
@@ -276,6 +279,7 @@ func _handle_gas_purchase() -> void:
 # ==========================================
 func _on_hurtbox_area_entered(area: Area3D) -> void:
 	if area.name.contains("ObstacleCar") or area.is_in_group("obstacles"):
+		stop_motor_sound()
 		take_crash_penalty()
 		area.queue_free() 
 
@@ -302,6 +306,7 @@ func take_crash_penalty() -> void:
 	
 	if current_fuel <= 0.0:
 		trigger_busted_sequence()
+		
 		if hud:
 			hud.show_game_over(true) 
 		return
@@ -313,7 +318,9 @@ func take_crash_penalty() -> void:
 
 func start_crash_recovery() -> void:
 	is_invincible = true
+	play_motor_sound()
 	await get_tree().create_timer(invincibility_duration).timeout
+	
 	is_stumbling = false
 	is_invincible = false
 	# Turn the HUD hand icon back to GREEN ✋ once the penalty is over!
@@ -424,6 +431,7 @@ func miss_snatch(reason: String) -> void:
 func trigger_busted_sequence() -> void:
 	is_busted = true
 	current_fuel = 0.0
+	stop_motor_sound()
 	apply_screen_shake(0.8) 
 	Global.road_speed = 0.0
 	if hud and hud.has_method("set_snatch_status"):
@@ -431,6 +439,7 @@ func trigger_busted_sequence() -> void:
 	
 func reset_game() -> void:
 	current_fuel = max_fuel
+	play_motor_sound()
 	is_busted = false
 	cash = 0
 	heat = 0.0
@@ -487,3 +496,20 @@ func add_heat(amount: float) -> void:
 		var audio_mgr = get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
 			audio_mgr.play_sfx("police_siren")
+func play_motor_sound():
+	motor_audio = Audio.play_sfx(preload("res://assets/sfx/motor_rev.wav"), -5)
+	
+	# Force the MP3 to loop continuously so it lasts for the entire 15-second chase!
+	if motor_audio and motor_audio.stream is AudioStreamMP3:
+		motor_audio.stream.loop = true
+
+func stop_motor_sound():
+		# Fade it out over 1.2 seconds and automatically delete the player
+	Audio.stop_sfx(motor_audio, 1.2)
+	motor_audio = null # Clear the variable so we know it stopped
+
+func volume_up_motor_sound():
+	motor_audio.volume_db = 10
+	
+func volume_down_motor_sound():
+	motor_audio.volume_db = 5

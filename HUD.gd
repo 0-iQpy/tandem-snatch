@@ -269,6 +269,7 @@ func update_gas_shop(price: int, cooldown_remaining: float, max_cooldown: float,
 func show_game_over(busted: bool):
 	if not is_node_ready():
 		await ready
+	
 	Audio.play_sfx(preload("res://assets/sfx/game_over.wav"), 15)
 	game_over_panel.visible = true
 	
