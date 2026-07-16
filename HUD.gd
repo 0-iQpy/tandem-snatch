@@ -647,3 +647,20 @@ func stop_siren():
 	# Fade it out over 1.2 seconds and automatically delete the player
 	Audio.stop_sfx(siren_audio, 1.2)
 	siren_audio = null # Clear the variable so we know it stopped
+
+# Add this function anywhere in hud.gd
+func set_snatch_status(is_ready: bool) -> void:
+	if not is_node_ready():
+		await ready
+		
+	# Assume you have a label named SnatchStatusLabel in your CanvasLayer
+	var status_label = get_node_or_null("SnatchStatusLabel")
+	if not status_label:
+		return
+		
+	if is_ready:
+		status_label.text = "✋"
+		status_label.modulate = Color.GREEN
+	else:
+		status_label.text = "✋"
+		status_label.modulate = Color.RED

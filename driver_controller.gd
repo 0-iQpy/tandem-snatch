@@ -26,8 +26,8 @@ var is_recovering: bool = false
 var current_required_action: String = ""
 var all_qte_actions: Array[String] = ["ui_up", "ui_down", "ui_left", "ui_right"]
 
-@export var qte_duration: float = 1.0         
-@export var perfect_threshold: float = 0.05   
+@export var qte_duration: float = 1.0          
+@export var perfect_threshold: float = 0.05    
 @export var good_threshold: float = 0.15      
 var qte_timer: float = 0
 var _qte_accepting_input: bool = false 
@@ -40,8 +40,8 @@ var _qte_accepting_input: bool = false
 @export var nitro_multiplier: float = 2.0 
 
 @export_group("Gas Station Economy")
-@export var gas_refill_price: int = 500       # Costs 300 cash per refill
-@export var gas_refill_amount: float = 40.0   # Restores 40% gas
+@export var gas_refill_price: int = 500        # Costs 300 cash per refill
+@export var gas_refill_amount: float = 40.0    # Restores 40% gas
 @export var gas_purchase_cooldown: float = 5.0 # Wait 5 seconds between refills
 var _gas_cooldown_timer: float = 0.0
 
@@ -54,6 +54,7 @@ var cash: int = 0
 var heat: float = 0.0
 var max_heat: float = 100.0
 var hud = null
+
 # --- POLICE EVASION VARIABLES ---
 @export var full_heat_duration: float = 15.0 # How many seconds the police chase lasts
 
@@ -81,6 +82,8 @@ func _ready() -> void:
 		hud.update_loot(0, 0)
 		hud.update_heat(0.0, max_heat)
 		hud.update_gas_shop(gas_refill_price, 0.0, gas_purchase_cooldown)
+		if hud.has_method("set_snatch_status"):
+			hud.set_snatch_status(true) # <-- Set initial HUD status to READY!
 		
 	# Dynamically instantiate PauseMenu overlay
 	var pause_menu_scene = load("res://scenes/ui/pause_menu.tscn")
@@ -156,7 +159,7 @@ func _physics_process(delta: float) -> void:
 			Global.is_police_heat_full = false
 			
 			if hud:
-				hud.update_heat(0.0, max_heat) # <-- ADD THIS LINE so the bar snaps cleanly to zero!
+				hud.update_heat(0.0, max_heat)
 				hud.show_feedback("🛡️ COPS EVADED! BACK TO NORMAL 🛡️", Color.GREEN, 2.5)
 			print("🛡️ POLICE CHASE ENDED - NORMAL TRAFFIC RESUMED")
 
@@ -206,9 +209,7 @@ func _physics_process(delta: float) -> void:
 	var target_steer = input_dir * max_steer_angle
 	var target_z = -input_dir * 0.003
 	if fork:
-	# Smoothly rotate the fork
 		fork.rotation_degrees.y = lerp(fork.rotation_degrees.y, target_steer, 5.0 * delta)
-		# Smoothly shift the local Z position
 		fork.position.z = lerp(fork.position.z, target_z, 5.0 * delta)
 	rotation_degrees.z = lerp(rotation_degrees.z, -input_dir * 15.0, 10.0 * delta)
 
@@ -238,12 +239,14 @@ func _handle_gas_purchase() -> void:
 		
 	# Check Cooldown
 	if _gas_cooldown_timer > 0.0:
+		Audio.play_sfx(preload("res://assets/sfx/snatch_failed.wav"), 25)
 		if hud:
 			hud.show_feedback("⏳ GAS COOLDOWN! Wait %.1fs ⏳" % _gas_cooldown_timer, Color.ORANGE, 1.0)
 		return
 		
 	# Check Cash
 	if cash < gas_refill_price:
+		Audio.play_sfx(preload("res://assets/sfx/snatch_failed.wav"), 25)
 		if hud:
 			hud.show_feedback("❌ NOT ENOUGH CASH! Needs ₱%d ❌" % gas_refill_price, Color.RED, 1.2)
 		return
@@ -287,8 +290,8 @@ func take_crash_penalty() -> void:
 	
 	if hud:
 		hud.update_gas(current_fuel, max_fuel, is_nitro_active)
-		
 		hud.show_feedback("💥 CRASHED! -20 FUEL 💥", Color.CORAL, 1.5)
+		
 	add_heat(5.0)
 	Audio.play_sfx(preload("res://assets/sfx/crash.mp3"), 15)
 	apply_screen_shake(0.5) 
@@ -302,16 +305,23 @@ func take_crash_penalty() -> void:
 		if hud:
 			hud.show_game_over(true) 
 		return
-		
+	is_stumbling = true
+	if hud:
+		if hud.has_method("set_snatch_status"):
+			hud.set_snatch_status(false) # Turns the hand icon RED ✋
 	start_crash_recovery()
 
 func start_crash_recovery() -> void:
 	is_invincible = true
 	await get_tree().create_timer(invincibility_duration).timeout
+	is_stumbling = false
 	is_invincible = false
+	# Turn the HUD hand icon back to GREEN ✋ once the penalty is over!
+	if hud and hud.has_method("set_snatch_status") and not is_busted:
+		hud.set_snatch_status(true)
 
 # ==========================================
-# --- QTE SNATCH LOGIC (DECOUPLED FROM GAS) ---
+# --- QTE SNATCH LOGIC ---
 # ==========================================
 func _on_snatch_zone_exited(area: Area3D) -> void:
 	if area != active_pedestrian:
@@ -349,8 +359,7 @@ func _on_qte_hud_ready():
 func evaluate_snatch_attempt() -> void:
 	is_in_qte_window = false
 	Audio.play_sfx(preload("res://assets/sfx/snatch.mp3"))
-	# 1. CALCULATE WHICH SIDE THE PEDESTRIAN IS ON IN 3D SPACE:
-	# (We check this before adding rewards so the reference is guaranteed valid)
+	
 	var is_ped_on_left: bool = false
 	if is_instance_valid(active_pedestrian):
 		is_ped_on_left = active_pedestrian.global_position.x < global_position.x
@@ -358,40 +367,32 @@ func evaluate_snatch_attempt() -> void:
 	# --- TIER 1: PERFECT SNATCH ---
 	if qte_timer <= perfect_threshold:
 		cash += 500
-		
 		add_heat(7.5)
 		if hud:
 			hud.update_loot(cash, 500)
-			
 			hud.show_qte_feedback("⚡ PERFECT SNATCH! +₱500 ⚡", Color.GOLD, 1.5)
-			
-			# 🦾 Reaches left or right based on physical 3D position!
 			hud.play_snatch_hand(is_ped_on_left)
-			Audio.play_sfx(preload("res://assets/sfx/magnanakaw.mp3"))
+		Audio.play_sfx(preload("res://assets/sfx/magnanakaw.mp3"))
+			
 	# --- TIER 2: GOOD SNATCH ---
 	elif qte_timer <= good_threshold:
 		cash += 250
 		add_heat(5.0)
 		if hud:
 			hud.update_loot(cash, 250)
-			
 			hud.show_qte_feedback("💰 GOOD SNATCH! +₱250 💰", Color.SPRING_GREEN, 1.5)
-			
-			# 🦾 Reaches left or right based on physical 3D position!
 			hud.play_snatch_hand(is_ped_on_left)
-			Audio.play_sfx(preload("res://assets/sfx/habulin_nyo.mp3"))
+		Audio.play_sfx(preload("res://assets/sfx/habulin_nyo.mp3"))
+			
 	# --- TIER 3: SLOPPY / LATE SNATCH ---
 	else:
 		cash += 100
 		add_heat(2.5)
 		if hud:
 			hud.update_loot(cash, 100)
-			
 			hud.show_qte_feedback("⚠️ SLOPPY GRAB! +₱100 ⚠️", Color.YELLOW, 1.5)
+		Audio.play_sfx(preload("res://assets/sfx/hoy.mp3"))
 			
-			# Uncomment if you want sloppy snatches to trigger the hand animation too:
-			# hud.play_snatch_hand(is_ped_on_left)
-			Audio.play_sfx(preload("res://assets/sfx/hoy.mp3"))
 	successful_snatch_cleanup()
 
 func successful_snatch_cleanup() -> void:
@@ -412,15 +413,21 @@ func miss_snatch(reason: String) -> void:
 	if hud:
 		hud.show_qte_feedback("❌ SNATCH FAILED: " + reason + " ❌", Color.RED, 1.5)
 		hud.hide_qte()
-	
+		if hud.has_method("set_snatch_status"):
+			hud.set_snatch_status(false) # <-- TELL HUD COOLDOWN STARTED!
+	Audio.play_sfx(preload("res://assets/sfx/snatch_failed.wav"), 25)
 	await get_tree().create_timer(stumble_penalty_time).timeout
 	is_stumbling = false
+	if hud and hud.has_method("set_snatch_status"):
+		hud.set_snatch_status(true) # <-- TELL HUD COOLDOWN ENDED!
 
 func trigger_busted_sequence() -> void:
 	is_busted = true
 	current_fuel = 0.0
 	apply_screen_shake(0.8) 
 	Global.road_speed = 0.0
+	if hud and hud.has_method("set_snatch_status"):
+		hud.set_snatch_status(false) # <-- Turn off status when busted
 	
 func reset_game() -> void:
 	current_fuel = max_fuel
@@ -453,6 +460,8 @@ func reset_game() -> void:
 		hud.update_heat(0.0, max_heat)
 		hud.update_gas_shop(gas_refill_price, 0.0, gas_purchase_cooldown)
 		hud.stop_siren()
+		if hud.has_method("set_snatch_status"):
+			hud.set_snatch_status(true) # <-- Reset status back to ready!
 	Audio.restart_bgm()
 
 # ==========================================
@@ -475,45 +484,6 @@ func add_heat(amount: float) -> void:
 		
 		if hud:
 			hud.show_feedback("🚨 POLICE CHASE! SURVIVE 15 SECONDS! 🚨", Color.RED, 2.5)
-		var audio_mgr = get_node_or_null("/root/AudioManager")
-		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("police_siren")
-	# 🛑 NEW: If we are busted OR currently in a full police chase, ignore all heat additions!
-	if is_busted or Global.is_police_heat_full:
-		return
-		
-	# Increase heat and clamp it between 0 and max_heat
-	heat = clampf(heat + amount, 0.0, max_heat)
-	
-	if hud:
-		hud.update_heat(heat, max_heat)
-		
-	# Check if Heat just hit 100% for the first time!
-	if heat >= max_heat and not Global.is_police_heat_full:
-		Global.is_police_heat_full = true
-		
-		if hud:
-			hud.show_feedback("🚨 POLICE CHASE! SURVIVE 15 SECONDS! 🚨", Color.RED, 2.5)
-		var audio_mgr = get_node_or_null("/root/AudioManager")
-		if audio_mgr and audio_mgr.has_method("play_sfx"):
-			audio_mgr.play_sfx("police_siren")
-	if is_busted:
-		return
-		
-	# Increase heat and clamp it between 0 and max_heat
-	heat = clampf(heat + amount, 0.0, max_heat)
-	
-	# Update the HUD
-	if hud:
-		hud.update_heat(heat, max_heat)
-		
-	# Check if Heat is MAXED OUT!
-	if heat >= max_heat and not Global.is_police_heat_full:
-		Global.is_police_heat_full = true
-		
-		# Optional: Play a police siren sound or show a huge HUD warning!
-		if hud:
-			hud.show_feedback("🚨 POLICE ROADBLOCKS INCOMING! 🚨", Color.RED, 2.5)
 		var audio_mgr = get_node_or_null("/root/AudioManager")
 		if audio_mgr and audio_mgr.has_method("play_sfx"):
 			audio_mgr.play_sfx("police_siren")
