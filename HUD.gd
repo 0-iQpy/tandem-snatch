@@ -1,9 +1,9 @@
 extends CanvasLayer
 
 # --- Node References ---
-@onready var gas_meter = $VBox/GasMeter
-@onready var speed_label = $VBox2/SpeedLabel
-@onready var speedometer = $VBox2/Speedometer
+@onready var gas_meter = $MarginContainer/HUDLayout/VBox/GasMeter
+@onready var speed_label = $MarginContainer/HUDLayout/VBox2/SpeedLabel
+@onready var speedometer = $MarginContainer/HUDLayout/VBox2/Speedometer
 
 # --- Speedometer Textures ---
 const SPEEDOMETER_1 = preload("res://assets/SPEDOMETER/Sprite-0001.png")
@@ -11,11 +11,11 @@ const SPEEDOMETER_2 = preload("res://assets/SPEDOMETER/Sprite-0002.png")
 const SPEEDOMETER_3 = preload("res://assets/SPEDOMETER/Sprite-0003.png")
 const SPEEDOMETER_4 = preload("res://assets/SPEDOMETER/Sprite-0004.png")
 
-@onready var heat_meter = $WantedLevel/VBox/HeatMeter
-@onready var wanted_level_panel = $WantedLevel
+@onready var heat_meter = $MarginContainer/HUDLayout/WantedLevel/VBox/HeatMeter
+@onready var wanted_level_panel = $MarginContainer/HUDLayout/WantedLevel
 
-@onready var cash_label = $LootSack/VBox/CashLabel
-@onready var last_item_label = $LootSack/VBox/LastItemLabel
+@onready var cash_label = $MarginContainer/HUDLayout/LootSack/VBox/CashLabel
+@onready var last_item_label = $MarginContainer/HUDLayout/LootSack/VBox/LastItemLabel
 
 @onready var game_over_panel = $GameOverPanel
 @onready var game_over_message = $GameOverPanel/VBox/MessageLabel
@@ -33,9 +33,9 @@ const SPEEDOMETER_4 = preload("res://assets/SPEDOMETER/Sprite-0004.png")
 @onready var right_hand_snatch = $RightHandSnatch if has_node("RightHandSnatch") else null
 
 # --- Optional Gas Shop UI References ---
-@onready var gas_shop_panel = $GasShopPanel if has_node("GasShopPanel") else null
-@onready var gas_shop_label = $GasShopPanel/PriceLabel if has_node("GasShopPanel/PriceLabel") else null
-@onready var gas_cooldown_bar = $GasShopPanel/CooldownBar if has_node("GasShopPanel/CooldownBar") else null
+@onready var gas_shop_panel = $MarginContainer/HUDLayout/GasShopPanel if has_node("MarginContainer/HUDLayout/GasShopPanel") else null
+@onready var gas_shop_label = $MarginContainer/HUDLayout/GasShopPanel/PriceLabel if has_node("MarginContainer/HUDLayout/GasShopPanel/PriceLabel") else null
+@onready var gas_cooldown_bar = $MarginContainer/HUDLayout/GasShopPanel/CooldownBar if has_node("MarginContainer/HUDLayout/GasShopPanel/CooldownBar") else null
 
 @onready var speed_lines_overlay = $SpeedLinesOverlay if has_node("SpeedLinesOverlay") else null
 signal qte_ready 
@@ -236,7 +236,7 @@ func update_loot(total_cash: int, change_amount: int):
 	else:
 		last_item_label.text = "LAST SNATCH: None"
 	
-	var parent_loot_node = $LootSack
+	var parent_loot_node = $MarginContainer/HUDLayout/LootSack
 	parent_loot_node.pivot_offset = parent_loot_node.size / 2.0
 	
 	var tween = create_tween()

@@ -61,6 +61,13 @@ outline_size = 12
 outline_color = Color(0, 0, 0, 0.862745)
 shadow_size = 5
 
+[sub_resource type="LabelSettings" id="LabelSettings_gasshop"]
+font = ExtResource("2_efote")
+font_size = 38
+outline_size = 12
+outline_color = Color(0, 0, 0, 1)
+shadow_size = 5
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gameover"]
 content_margin_left = 24.0
 content_margin_top = 20.0
@@ -169,32 +176,42 @@ colors = PackedColorArray(0.9, 0.15, 0.15, 1, 0.9, 0.8, 0, 1, 0, 0.9, 1, 1)
 [sub_resource type="GradientTexture1D" id="GradientTexture1D_qte"]
 gradient = SubResource("Gradient_qte")
 
-[sub_resource type="LabelSettings" id="LabelSettings_gasshop"]
-font = ExtResource("2_efote")
-font_size = 38
-outline_size = 12
-outline_color = Color(0, 0, 0, 1)
-shadow_size = 5
-
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_k5de2")
 
-[node name="VBox2" type="VBoxContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="HUDLayout" type="Control" parent="MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBox2" type="VBoxContainer" parent="MarginContainer/HUDLayout"]
+layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -84.0
-offset_top = 154.0
+offset_top = 140.0
 offset_right = 84.0
-offset_bottom = 278.0
+offset_bottom = 264.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 8
 alignment = 1
 
-[node name="Speedometer" type="TextureRect" parent="VBox2"]
+[node name="Speedometer" type="TextureRect" parent="MarginContainer/HUDLayout/VBox2"]
 custom_minimum_size = Vector2(72, 72)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -203,7 +220,7 @@ texture = ExtResource("3_speedometer")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="SpeedLabel" type="Label" parent="VBox2"]
+[node name="SpeedLabel" type="Label" parent="MarginContainer/HUDLayout/VBox2"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "0 m/s"
@@ -211,7 +228,8 @@ label_settings = SubResource("LabelSettings_8sq4i")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/HUDLayout"]
+layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
@@ -225,12 +243,12 @@ grow_vertical = 0
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="GasLabel" type="Label" parent="VBox"]
+[node name="GasLabel" type="Label" parent="MarginContainer/HUDLayout/VBox"]
 layout_mode = 2
 text = "GAS TANK:"
 label_settings = SubResource("LabelSettings_ne771")
 
-[node name="GasMeter" type="ProgressBar" parent="VBox"]
+[node name="GasMeter" type="ProgressBar" parent="MarginContainer/HUDLayout/VBox"]
 custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
 theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
@@ -238,29 +256,29 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
 value = 100.0
 show_percentage = false
 
-[node name="WantedLevel" type="PanelContainer" parent="."]
+[node name="WantedLevel" type="PanelContainer" parent="MarginContainer/HUDLayout"]
+layout_mode = 1
 anchors_preset = 4
 anchor_top = 0.5
 anchor_bottom = 0.5
-offset_left = 20.0
-offset_top = -110.5
-offset_right = 140.0
+offset_top = -232.0
+offset_right = 120.0
 offset_bottom = 110.5
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
-[node name="VBox" type="VBoxContainer" parent="WantedLevel"]
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/HUDLayout/WantedLevel"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="HeatLabel" type="Label" parent="WantedLevel/VBox"]
+[node name="HeatLabel" type="Label" parent="MarginContainer/HUDLayout/WantedLevel/VBox"]
 layout_mode = 2
 text = "POLICE HEAT:"
 label_settings = SubResource("LabelSettings_ne771")
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="HeatMeter" type="ProgressBar" parent="WantedLevel/VBox"]
+[node name="HeatMeter" type="ProgressBar" parent="MarginContainer/HUDLayout/WantedLevel/VBox"]
 custom_minimum_size = Vector2(16, 100)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -270,30 +288,53 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
 fill_mode = 3
 show_percentage = false
 
-[node name="LootSack" type="MarginContainer" parent="."]
+[node name="LootSack" type="MarginContainer" parent="MarginContainer/HUDLayout"]
+layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -140.0
-offset_right = 448.0
-offset_bottom = -20.0
+offset_top = -120.0
+offset_right = 428.0
 grow_vertical = 0
 
-[node name="VBox" type="VBoxContainer" parent="LootSack"]
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/HUDLayout/LootSack"]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="CashLabel" type="Label" parent="LootSack/VBox"]
+[node name="CashLabel" type="Label" parent="MarginContainer/HUDLayout/LootSack/VBox"]
 layout_mode = 2
 text = "CASH: ₱0"
 label_settings = SubResource("LabelSettings_vow1y")
 
-[node name="LastItemLabel" type="Label" parent="LootSack/VBox"]
+[node name="LastItemLabel" type="Label" parent="MarginContainer/HUDLayout/LootSack/VBox"]
 layout_mode = 2
 text = "LAST SNATCH: None"
 label_settings = SubResource("LabelSettings_ne771")
 autowrap_mode = 3
+
+[node name="GasShopPanel" type="VBoxContainer" parent="MarginContainer/HUDLayout"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -203.0
+offset_top = -88.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="PriceLabel" type="Label" parent="MarginContainer/HUDLayout/GasShopPanel"]
+layout_mode = 2
+text = "Gas Price: ₱500"
+label_settings = SubResource("LabelSettings_gasshop")
+
+[node name="CooldownBar" type="ProgressBar" parent="MarginContainer/HUDLayout/GasShopPanel"]
+custom_minimum_size = Vector2(0, 25.2)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
+theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
+show_percentage = false
 
 [node name="GameOverPanel" type="PanelContainer" parent="."]
 visible = false
@@ -405,28 +446,3 @@ layout_mode = 2
 value = 100.0
 nine_patch_stretch = true
 texture_progress = SubResource("GradientTexture1D_qte")
-
-[node name="GasShopPanel" type="VBoxContainer" parent="."]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -223.0
-offset_top = -108.0
-offset_right = -20.0
-offset_bottom = -20.0
-grow_horizontal = 0
-grow_vertical = 0
-
-[node name="PriceLabel" type="Label" parent="GasShopPanel"]
-layout_mode = 2
-text = "Gas Price: ₱500"
-label_settings = SubResource("LabelSettings_gasshop")
-
-[node name="CooldownBar" type="ProgressBar" parent="GasShopPanel"]
-custom_minimum_size = Vector2(0, 25.2)
-layout_mode = 2
-theme_override_styles/background = SubResource("StyleBoxFlat_bar_bg")
-theme_override_styles/fill = SubResource("StyleBoxFlat_bar_fill")
-show_percentage = false
