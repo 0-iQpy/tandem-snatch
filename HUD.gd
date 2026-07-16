@@ -19,6 +19,7 @@ const SPEEDOMETER_4 = preload("res://assets/SPEDOMETER/Sprite-0004.png")
 
 @onready var game_over_panel = $GameOverPanel
 @onready var game_over_message = $GameOverPanel/VBox/MessageLabel
+@onready var game_over_stats = $GameOverPanel/VBox/StatsLabel if has_node("GameOverPanel/VBox/StatsLabel") else null
 @onready var game_over_restart_btn = $GameOverPanel/VBox/RestartButton if has_node("GameOverPanel/VBox/RestartButton") else null
 @onready var game_over_menu_btn = $GameOverPanel/VBox/MainMenuButton if has_node("GameOverPanel/VBox/MainMenuButton") else null
 @onready var feedback_label = $FeedbackLabel
@@ -270,6 +271,27 @@ func show_game_over(busted: bool):
 		await ready
 	Audio.play_sfx(preload("res://assets/sfx/game_over.wav"), 15)
 	game_over_panel.visible = true
+	
+	# Load run stats (final cash)
+	var player = get_tree().current_scene.get_node_or_null("Car")
+	if not player:
+		player = get_tree().current_scene.get_node_or_null("Motorcycle")
+	var final_cash = 0
+	if player:
+		final_cash = player.cash
+	if game_over_stats:
+		game_over_stats.text = "Final Loot: ₱%d" % final_cash
+		
+	# Dynamic Neon Border Styling
+	var stylebox = game_over_panel.get_theme_stylebox("panel")
+	if stylebox is StyleBoxFlat:
+		var dup_stylebox = stylebox.duplicate()
+		if busted:
+			dup_stylebox.border_color = Color(1.0, 0.0, 0.2) # Red for busted
+		else:
+			dup_stylebox.border_color = Color(1.0, 0.6, 0.0) # Orange for out of gas
+		game_over_panel.add_theme_stylebox_override("panel", dup_stylebox)
+
 	if busted:
 		game_over_message.text = "CRASHED OUT! BUSTED!"
 	else:
@@ -280,7 +302,9 @@ func show_game_over(busted: bool):
 		game_over_restart_btn.grab_focus()
 
 func _on_game_over_restart_pressed() -> void:
-	var player = get_tree().current_scene.get_node_or_null("Motorcycle")
+	var player = get_tree().current_scene.get_node_or_null("Car")
+	if not player:
+		player = get_tree().current_scene.get_node_or_null("Motorcycle")
 	if player and player.has_method("reset_game"):
 		player.call("reset_game")
 	else:

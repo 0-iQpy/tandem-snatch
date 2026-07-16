@@ -1335,6 +1335,9 @@ transform = Transform3D(1, 0, 0, 0, 0.573476, 0.819222, 0, -0.819222, 0.573476, 
 
 [node name="HUD" parent="." instance=ExtResource("6_7mycd")]
 
+[node name="VBox" parent="HUD/MarginContainer/HUDLayout/WantedLevel" index="0"]
+alignment = 1
+
 [node name="MainMenuButton" parent="HUD/GameOverPanel/VBox" index="4"]
 mouse_default_cursor_shape = 2
 
@@ -1364,6 +1367,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 
 [node name="QTEFeedbackLabel" type="Label" parent="HUD"]
 anchors_preset = 5

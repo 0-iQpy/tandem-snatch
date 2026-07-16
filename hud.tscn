@@ -99,6 +99,13 @@ font_size = 32
 outline_size = 4
 outline_color = Color(0, 0, 0, 1)
 
+[sub_resource type="LabelSettings" id="LabelSettings_go_stats"]
+font = ExtResource("2_efote")
+font_size = 28
+font_color = Color(1, 0.843137, 0, 1)
+outline_size = 4
+outline_color = Color(0, 0, 0, 1)
+
 [sub_resource type="LabelSettings" id="LabelSettings_feedback"]
 font = ExtResource("2_efote")
 font_size = 46
@@ -185,6 +192,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
@@ -194,6 +202,7 @@ theme_override_constants/margin_bottom = 24
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="VBox2" type="VBoxContainer" parent="MarginContainer/HUDLayout"]
 layout_mode = 1
@@ -368,6 +377,12 @@ text = "OUT OF GAS!"
 label_settings = SubResource("LabelSettings_go_sub")
 horizontal_alignment = 1
 
+[node name="StatsLabel" type="Label" parent="GameOverPanel/VBox"]
+layout_mode = 2
+text = "Final Loot: ₱0"
+label_settings = SubResource("LabelSettings_go_stats")
+horizontal_alignment = 1
+
 [node name="PromptLabel" type="Label" parent="GameOverPanel/VBox"]
 layout_mode = 2
 text = "Press R to Restart"
@@ -375,14 +390,15 @@ label_settings = SubResource("LabelSettings_ne771")
 horizontal_alignment = 1
 
 [node name="RestartButton" type="Button" parent="GameOverPanel/VBox"]
-visible = false
 layout_mode = 2
 focus_neighbor_bottom = NodePath("../MainMenuButton")
+mouse_default_cursor_shape = 2
 text = "RESTART RUN"
 
 [node name="MainMenuButton" type="Button" parent="GameOverPanel/VBox"]
 layout_mode = 2
 focus_neighbor_top = NodePath("../RestartButton")
+mouse_default_cursor_shape = 2
 text = "MAIN MENU"
 
 [node name="FeedbackLabel" type="Label" parent="."]

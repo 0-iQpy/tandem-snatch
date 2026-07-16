@@ -11,15 +11,9 @@ outline_color = Color(0, 0, 0, 1)
 shadow_size = 4
 shadow_color = Color(0, 0, 0, 0.5)
 
-[node name="PauseMenu" type="Control"]
+[node name="PauseMenu" type="CanvasLayer"]
 process_mode = 3
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme = ExtResource("1_theme")
+layer = 3
 script = ExtResource("2_script")
 
 [node name="Overlay" type="ColorRect" parent="."]
@@ -32,6 +26,7 @@ grow_vertical = 2
 color = Color(0.0509804, 0.0509804, 0.0784314, 0.627451)
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
+theme = ExtResource("1_theme")
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -65,13 +60,20 @@ text = "RESUME"
 [node name="RestartButton" type="Button" parent="PanelContainer/VBox"]
 layout_mode = 2
 focus_neighbor_top = NodePath("../ResumeButton")
-focus_neighbor_bottom = NodePath("../MenuButton")
+focus_neighbor_bottom = NodePath("../SettingsButton")
 mouse_default_cursor_shape = 2
 text = "RESTART RUN"
 
-[node name="MenuButton" type="Button" parent="PanelContainer/VBox"]
+[node name="SettingsButton" type="Button" parent="PanelContainer/VBox"]
 layout_mode = 2
 focus_neighbor_top = NodePath("../RestartButton")
+focus_neighbor_bottom = NodePath("../MenuButton")
+mouse_default_cursor_shape = 2
+text = "SETTINGS"
+
+[node name="MenuButton" type="Button" parent="PanelContainer/VBox"]
+layout_mode = 2
+focus_neighbor_top = NodePath("../SettingsButton")
 focus_neighbor_bottom = NodePath("../QuitButton")
 mouse_default_cursor_shape = 2
 text = "MAIN MENU"
@@ -83,6 +85,7 @@ mouse_default_cursor_shape = 2
 text = "EXIT"
 
 [node name="ConfirmOverlay" type="PanelContainer" parent="."]
+theme = ExtResource("1_theme")
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -125,3 +128,70 @@ custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 mouse_default_cursor_shape = 2
 text = "NO"
+
+[node name="SettingsOverlay" type="PanelContainer" parent="."]
+theme = ExtResource("1_theme")
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -180.0
+offset_right = 250.0
+offset_bottom = 180.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBox" type="VBoxContainer" parent="SettingsOverlay"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="SettingsTitle" type="Label" parent="SettingsOverlay/VBox"]
+layout_mode = 2
+text = "SETTINGS"
+label_settings = SubResource("LabelSettings_paused")
+horizontal_alignment = 1
+
+[node name="SliderGrid" type="GridContainer" parent="SettingsOverlay/VBox"]
+layout_mode = 2
+columns = 2
+
+[node name="MasterLabel" type="Label" parent="SettingsOverlay/VBox/SliderGrid"]
+layout_mode = 2
+text = "Master Volume"
+
+[node name="MasterSlider" type="HSlider" parent="SettingsOverlay/VBox/SliderGrid"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_vertical = 4
+value = 70.0
+
+[node name="MusicLabel" type="Label" parent="SettingsOverlay/VBox/SliderGrid"]
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "Music Volume"
+
+[node name="MusicSlider" type="HSlider" parent="SettingsOverlay/VBox/SliderGrid"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_vertical = 4
+value = 70.0
+
+[node name="SFXLabel" type="Label" parent="SettingsOverlay/VBox/SliderGrid"]
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "SFX Volume"
+
+[node name="SFXSlider" type="HSlider" parent="SettingsOverlay/VBox/SliderGrid"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+size_flags_vertical = 4
+value = 70.0
+
+[node name="BackButton" type="Button" parent="SettingsOverlay/VBox"]
+layout_mode = 2
+mouse_default_cursor_shape = 2
+text = "BACK"

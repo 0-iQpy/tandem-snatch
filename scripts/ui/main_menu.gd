@@ -26,12 +26,8 @@ extends Control
 
 @onready var transition_overlay = $TransitionOverlay
 
-# Cache AudioManager locally if it is loaded
-var _audio_mgr = null
-
 func _ready() -> void:
-	# Lookup AudioManager autoload safely without crashing if it's not registered
-	_audio_mgr = get_node_or_null("/root/AudioManager")
+	Audio.stop_all_sfx(0.0)
 	Audio.play_bgm(preload("res://assets/bgm/main_menu.mp3"))
 	# Hide sub-panels by default
 	settings_overlay.visible = false
@@ -61,46 +57,23 @@ func _ready() -> void:
 	# Set up volume slider defaults
 	_init_volume_sliders()
 	
-	# Hook up button sound effects recursively
-	_setup_button_sounds(self)
-	
 	# Grab initial focus for keyboard control
 	play_button.grab_focus()
-	
-	# Start Main Menu BGM
-	if _audio_mgr:
-		_audio_mgr.play_bgm("menu")
-
-func _setup_button_sounds(node: Node) -> void:
-	for child in node.get_children():
-		if child is Button:
-			child.mouse_entered.connect(func(): if _audio_mgr: _audio_mgr.play_sfx("hover"))
-			child.focus_entered.connect(func(): if _audio_mgr: _audio_mgr.play_sfx("hover"))
-			if child != play_button: # Play button has press sound on transition
-				child.pressed.connect(func(): if _audio_mgr: _audio_mgr.play_sfx("press"))
-		elif child.get_child_count() > 0:
-			_setup_button_sounds(child)
 
 func _init_volume_sliders() -> void:
-	if _audio_mgr:
-		master_slider.value = _audio_mgr._get_bus_volume("Master")
-		music_slider.value = _audio_mgr._get_bus_volume("Music")
-		sfx_slider.value = _audio_mgr._get_bus_volume("SFX")
+	master_slider.value = Audio.get_bus_volume("Master")
+	music_slider.value = Audio.get_bus_volume("Music")
+	sfx_slider.value = Audio.get_bus_volume("SFX")
 	
-	master_slider.value_changed.connect(func(val): if _audio_mgr: _audio_mgr._set_bus_volume("Master", val))
-	music_slider.value_changed.connect(func(val): if _audio_mgr: _audio_mgr._set_bus_volume("Music", val))
-	sfx_slider.value_changed.connect(func(val): if _audio_mgr: _audio_mgr._set_bus_volume("SFX", val))
+	master_slider.value_changed.connect(func(val): Audio.set_bus_volume("Master", val))
+	music_slider.value_changed.connect(func(val): Audio.set_bus_volume("Music", val))
+	sfx_slider.value_changed.connect(func(val): Audio.set_bus_volume("SFX", val))
 
 # --- Button Handlers ---
 
 func _on_play_pressed() -> void:
 	# Block button focus inputs during transition
 	play_button.release_focus()
-	
-	# Play select/start SFX and stop BGM
-	if _audio_mgr:
-		_audio_mgr.play_sfx("press")
-		_audio_mgr.stop_bgm()
 	
 	Audio.stop_bgm()
 	Audio.play_bgm(preload("res://assets/bgm/main.mp3"))
@@ -145,8 +118,6 @@ func _on_quit_pressed() -> void:
 	quit_no_button.grab_focus()
 
 func _on_quit_confirmed() -> void:
-	if _audio_mgr:
-		_audio_mgr.play_sfx("press")
 	get_tree().quit()
 
 func _on_quit_cancelled() -> void:
