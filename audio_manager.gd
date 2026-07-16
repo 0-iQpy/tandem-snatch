@@ -85,3 +85,26 @@ func stop_bgm(fade_duration: float = 0.0) -> void:
 func restart_bgm() -> void:
 	if _bgm_player.stream:
 		_bgm_player.play(0.0)
+
+## Sets the volume of a specific audio bus.
+## value should be between 0.0 and 100.0 (slider range).
+func set_bus_volume(bus_name: String, value: float) -> void:
+	var bus_index = AudioServer.get_bus_index(bus_name)
+	if bus_index != -1:
+		var linear_val = value / 100.0
+		if linear_val <= 0.05:
+			# Mute the bus entirely to prevent low frequency hums
+			AudioServer.set_bus_mute(bus_index, true)
+		else:
+			AudioServer.set_bus_mute(bus_index, false)
+			AudioServer.set_bus_volume_db(bus_index, linear_to_db(linear_val))
+
+## Returns the volume of a specific audio bus as a value between 0.0 and 100.0.
+func get_bus_volume(bus_name: String) -> float:
+	var bus_index = AudioServer.get_bus_index(bus_name)
+	if bus_index != -1:
+		if AudioServer.is_bus_mute(bus_index):
+			return 0.0
+		var db_val = AudioServer.get_bus_volume_db(bus_index)
+		return clampf(db_to_linear(db_val) * 100.0, 0.0, 100.0)
+	return 70.0
