@@ -1,15 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://bmggbfs06asxh"]
+[gd_scene load_steps=4 format=3 uid="uid://bmggbfs06asxh"]
 
 [ext_resource type="Script" uid="uid://bsp8nn4i3kvta" path="res://pedestrian.gd" id="1_y5q06"]
+[ext_resource type="Texture2D" uid="uid://csxtbdo5bqcnx" path="res://assets/Character/1-GIRL1.PNG" id="2_bixwg"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_bixwg"]
 size = Vector3(0.15, 1, 0.15)
-
-[sub_resource type="BoxMesh" id="BoxMesh_28ad3"]
-size = Vector3(0.15, 1, 0.15)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x2pcv"]
-albedo_color = Color(0.980392, 0.345098, 0, 1)
 
 [node name="Pedestrian" type="Area3D"]
 collision_layer = 8
@@ -21,12 +16,12 @@ walking_speed = 0.2
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 shape = SubResource("BoxShape3D_bixwg")
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-mesh = SubResource("BoxMesh_28ad3")
-surface_material_override/0 = SubResource("StandardMaterial3D_x2pcv")
-
 [node name="PromptLabel" type="Label3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.828936, 0)
 billboard = 1
 font_size = 90
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(0.110907, 0, 0, 0, 0.110907, 0, 0, 0, 0.217981, 0, 0.244173, 0)
+billboard = 1
+texture = ExtResource("2_bixwg")

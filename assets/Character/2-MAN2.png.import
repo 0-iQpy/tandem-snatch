@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://1ju2sw2g26rl"
-path="res://.godot/imported/SPLASH_ART.png-122d66178d9d867fa0596ded278ee53b.ctex"
+uid="uid://d1rvntxoq28mc"
+path="res://.godot/imported/2-MAN2.png-d677383d3002145fc934b69c2eaad31f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/SPLASH-ART/SPLASH_ART.png"
-dest_files=["res://.godot/imported/SPLASH_ART.png-122d66178d9d867fa0596ded278ee53b.ctex"]
+source_file="res://assets/Character/2-MAN2.png"
+dest_files=["res://.godot/imported/2-MAN2.png-d677383d3002145fc934b69c2eaad31f.ctex"]
 
 [params]
 

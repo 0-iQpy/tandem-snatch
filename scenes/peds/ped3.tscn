@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3 uid="uid://bes66als7arhn"]
+
+[ext_resource type="Script" uid="uid://bsp8nn4i3kvta" path="res://pedestrian.gd" id="1_stq4v"]
+[ext_resource type="Texture2D" uid="uid://cs18c7b18utxo" path="res://assets/Character/2-GIRL1.PNG" id="2_stq4v"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_bixwg"]
+size = Vector3(0.15, 1, 0.15)
+
+[node name="Pedestrian" type="Area3D"]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("1_stq4v")
+walking_speed = 0.2
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("BoxShape3D_bixwg")
+
+[node name="PromptLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.828936, 0)
+billboard = 1
+font_size = 90
+
+[node name="Sprite3D" type="Sprite3D" parent="."]
+transform = Transform3D(0.110907, 0, 0, 0, 0.110907, 0, 0, 0, 0.217981, 0, 0.244173, 0)
+billboard = 1
+texture = ExtResource("2_stq4v")

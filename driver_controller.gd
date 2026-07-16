@@ -5,6 +5,7 @@ extends CharacterBody3D
 @export var max_steer_angle: float = 25.0 
 @export var wheel_spin_speed: float = 18.0 
 @export var fuel_gauge: ProgressBar
+@export var snatch_voices: Array[AudioStream]
 
 # ==========================================
 # --- CRASH & FUEL PENALTY VARIABLES ---
@@ -379,7 +380,6 @@ func evaluate_snatch_attempt() -> void:
 			hud.update_loot(cash, 500)
 			hud.show_qte_feedback("⚡ PERFECT SNATCH! +₱500 ⚡", Color.GOLD, 1.5)
 			hud.play_snatch_hand(is_ped_on_left)
-		Audio.play_sfx(preload("res://assets/sfx/magnanakaw.mp3"))
 			
 	# --- TIER 2: GOOD SNATCH ---
 	elif qte_timer <= good_threshold:
@@ -389,7 +389,6 @@ func evaluate_snatch_attempt() -> void:
 			hud.update_loot(cash, 250)
 			hud.show_qte_feedback("💰 GOOD SNATCH! +₱250 💰", Color.SPRING_GREEN, 1.5)
 			hud.play_snatch_hand(is_ped_on_left)
-		Audio.play_sfx(preload("res://assets/sfx/habulin_nyo.mp3"))
 			
 	# --- TIER 3: SLOPPY / LATE SNATCH ---
 	else:
@@ -398,7 +397,10 @@ func evaluate_snatch_attempt() -> void:
 		if hud:
 			hud.update_loot(cash, 100)
 			hud.show_qte_feedback("⚠️ SLOPPY GRAB! +₱100 ⚠️", Color.YELLOW, 1.5)
-		Audio.play_sfx(preload("res://assets/sfx/hoy.mp3"))
+			
+	# --- PLAY RANDOM VOICE LINE ---
+	if not snatch_voices.is_empty():
+		Audio.play_sfx(snatch_voices.pick_random())
 			
 	successful_snatch_cleanup()
 

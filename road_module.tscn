@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://03sxxu8dfj2w"]
+[gd_scene load_steps=26 format=3 uid="uid://03sxxu8dfj2w"]
 
 [ext_resource type="Script" uid="uid://k85u7uj137t8" path="res://road_module.gd" id="1_dnxgn"]
 [ext_resource type="PackedScene" uid="uid://cr47t7ne50x40" path="res://buildings/building1.fbx" id="2_jgtwr"]
@@ -16,13 +16,21 @@
 [ext_resource type="PackedScene" uid="uid://72b1fn0muf44" path="res://obstacle_sedan.tscn" id="11_ma3no"]
 [ext_resource type="PackedScene" uid="uid://csjv1j13c1w32" path="res://KayKit_City_Builder_Bits_1.0_FREE/Assets/fbx/ROAD.fbx" id="12_abvkv"]
 [ext_resource type="PackedScene" uid="uid://rvw7mriilmin" path="res://buildings/building11.fbx" id="12_lpjj6"]
-[ext_resource type="PackedScene" uid="uid://bmggbfs06asxh" path="res://pedestrian.tscn" id="12_ma3no"]
+[ext_resource type="PackedScene" uid="uid://bmggbfs06asxh" path="res://scenes/peds/ped1.tscn" id="12_ma3no"]
+[ext_resource type="PackedScene" uid="uid://c2dls1daem12s" path="res://scenes/peds/ped2.tscn" id="16_1mcx3"]
+[ext_resource type="PackedScene" uid="uid://bes66als7arhn" path="res://scenes/peds/ped3.tscn" id="17_k7wcp"]
+[ext_resource type="PackedScene" uid="uid://ih8cliyl0ibe" path="res://scenes/peds/ped4.tscn" id="18_i05ac"]
+[ext_resource type="PackedScene" uid="uid://b1onqxhjf7gr7" path="res://scenes/peds/ped5.tscn" id="19_e3ljx"]
+[ext_resource type="PackedScene" uid="uid://b5q6ug5erot8y" path="res://scenes/peds/ped6.tscn" id="20_v8x4k"]
+[ext_resource type="PackedScene" uid="uid://coiwu6d4qbv4" path="res://scenes/peds/ped7.tscn" id="21_iqool"]
+[ext_resource type="PackedScene" uid="uid://c6652x6jty8ky" path="res://scenes/peds/ped8.tscn" id="22_hr8ae"]
+[ext_resource type="PackedScene" uid="uid://qtay47h8k1d0" path="res://scenes/peds/ped9.tscn" id="23_4lagr"]
 
 [node name="RoadModule" type="Node3D"]
 script = ExtResource("1_dnxgn")
 building_scenes = Array[PackedScene]([ExtResource("2_jgtwr"), ExtResource("3_abvkv"), ExtResource("4_ma3no"), ExtResource("5_gi5fo"), ExtResource("6_2a4jm"), ExtResource("7_l442v"), ExtResource("8_dmwm3"), ExtResource("9_kqatg"), ExtResource("10_a8d5w"), ExtResource("11_64xdj"), ExtResource("12_lpjj6")])
 obstacle_scenes = Array[PackedScene]([ExtResource("10_abvkv"), ExtResource("11_ma3no")])
-pedestrian_scenes = Array[PackedScene]([ExtResource("12_ma3no")])
+pedestrian_scenes = Array[PackedScene]([ExtResource("12_ma3no"), ExtResource("16_1mcx3"), ExtResource("17_k7wcp"), ExtResource("18_i05ac"), ExtResource("19_e3ljx"), ExtResource("20_v8x4k"), ExtResource("21_iqool"), ExtResource("22_hr8ae"), ExtResource("23_4lagr")])
 police_scenes = Array[PackedScene]([ExtResource("11_abvkv")])
 max_cars_per_tile = 1
 spawn_chance_per_attempt = 0.6
