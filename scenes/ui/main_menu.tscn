@@ -1,7 +1,8 @@
-[gd_scene load_steps=4 format=3 uid="uid://chf5u8vd50mgy"]
+[gd_scene load_steps=5 format=3 uid="uid://chf5u8vd50mgy"]
 
 [ext_resource type="Theme" uid="uid://da33t87nmk10k" path="res://resources/themes/metro_arcade_theme.tres" id="1_theme"]
 [ext_resource type="Script" uid="uid://cp2n3rfgml8gh" path="res://scripts/ui/main_menu.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://1ju2sw2g26rl" path="res://assets/SPLASH-ART/SPLASH_ART.png" id="3_1g8jr"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_title"]
 font_size = 42
@@ -28,58 +29,74 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+texture = ExtResource("3_1g8jr")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="CenterContainer" type="CenterContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = -20.0
-offset_right = 150.0
-offset_bottom = 260.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 125
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 60
 
-[node name="MainButtons" type="VBoxContainer" parent="CenterContainer"]
+[node name="MenuLayout" type="Control" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="CenterContainer" type="CenterContainer" parent="MarginContainer/MenuLayout"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -323.0
+offset_right = 300.0
+grow_vertical = 0
+
+[node name="MainButtons" type="VBoxContainer" parent="MarginContainer/MenuLayout/CenterContainer"]
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="PlayButton" type="Button" parent="CenterContainer/MainButtons"]
+[node name="PlayButton" type="Button" parent="MarginContainer/MenuLayout/CenterContainer/MainButtons"]
 layout_mode = 2
 focus_neighbor_bottom = NodePath("../ControlsButton")
+mouse_default_cursor_shape = 2
 text = "PLAY"
 
-[node name="ControlsButton" type="Button" parent="CenterContainer/MainButtons"]
+[node name="ControlsButton" type="Button" parent="MarginContainer/MenuLayout/CenterContainer/MainButtons"]
 layout_mode = 2
 focus_neighbor_top = NodePath("../PlayButton")
 focus_neighbor_bottom = NodePath("../SettingsButton")
+mouse_default_cursor_shape = 2
 text = "HOW TO PLAY"
 
-[node name="SettingsButton" type="Button" parent="CenterContainer/MainButtons"]
+[node name="SettingsButton" type="Button" parent="MarginContainer/MenuLayout/CenterContainer/MainButtons"]
 layout_mode = 2
 focus_neighbor_top = NodePath("../ControlsButton")
 focus_neighbor_bottom = NodePath("../CreditsButton")
+mouse_default_cursor_shape = 2
 text = "SETTINGS"
 
-[node name="CreditsButton" type="Button" parent="CenterContainer/MainButtons"]
+[node name="CreditsButton" type="Button" parent="MarginContainer/MenuLayout/CenterContainer/MainButtons"]
 layout_mode = 2
 focus_neighbor_top = NodePath("../SettingsButton")
 focus_neighbor_bottom = NodePath("../QuitButton")
+mouse_default_cursor_shape = 2
 text = "CREDITS"
 
-[node name="QuitButton" type="Button" parent="CenterContainer/MainButtons"]
+[node name="QuitButton" type="Button" parent="MarginContainer/MenuLayout/CenterContainer/MainButtons"]
 layout_mode = 2
 focus_neighbor_top = NodePath("../CreditsButton")
+mouse_default_cursor_shape = 2
 text = "EXIT"
 
-[node name="SettingsOverlay" type="PanelContainer" parent="."]
+[node name="SettingsOverlay" type="PanelContainer" parent="MarginContainer/MenuLayout"]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -94,56 +111,59 @@ offset_bottom = 180.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="SettingsOverlay"]
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MenuLayout/SettingsOverlay"]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="SettingsTitle" type="Label" parent="SettingsOverlay/VBox"]
+[node name="SettingsTitle" type="Label" parent="MarginContainer/MenuLayout/SettingsOverlay/VBox"]
 layout_mode = 2
 text = "SETTINGS"
 label_settings = SubResource("LabelSettings_title")
 horizontal_alignment = 1
 
-[node name="SliderGrid" type="GridContainer" parent="SettingsOverlay/VBox"]
+[node name="SliderGrid" type="GridContainer" parent="MarginContainer/MenuLayout/SettingsOverlay/VBox"]
 layout_mode = 2
 columns = 2
 
-[node name="MasterLabel" type="Label" parent="SettingsOverlay/VBox/SliderGrid"]
+[node name="MasterLabel" type="Label" parent="MarginContainer/MenuLayout/SettingsOverlay/VBox/SliderGrid"]
 layout_mode = 2
 text = "Master Volume"
 
-[node name="MasterSlider" type="HSlider" parent="SettingsOverlay/VBox/SliderGrid"]
+[node name="MasterSlider" type="HSlider" parent="MarginContainer/MenuLayout/SettingsOverlay/VBox/SliderGrid"]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_vertical = 4
 value = 70.0
 
-[node name="MusicLabel" type="Label" parent="SettingsOverlay/VBox/SliderGrid"]
+[node name="MusicLabel" type="Label" parent="MarginContainer/MenuLayout/SettingsOverlay/VBox/SliderGrid"]
 layout_mode = 2
+mouse_default_cursor_shape = 2
 text = "Music Volume"
 
-[node name="MusicSlider" type="HSlider" parent="SettingsOverlay/VBox/SliderGrid"]
+[node name="MusicSlider" type="HSlider" parent="MarginContainer/MenuLayout/SettingsOverlay/VBox/SliderGrid"]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_vertical = 4
 value = 70.0
 
-[node name="SFXLabel" type="Label" parent="SettingsOverlay/VBox/SliderGrid"]
+[node name="SFXLabel" type="Label" parent="MarginContainer/MenuLayout/SettingsOverlay/VBox/SliderGrid"]
 layout_mode = 2
+mouse_default_cursor_shape = 2
 text = "SFX Volume"
 
-[node name="SFXSlider" type="HSlider" parent="SettingsOverlay/VBox/SliderGrid"]
+[node name="SFXSlider" type="HSlider" parent="MarginContainer/MenuLayout/SettingsOverlay/VBox/SliderGrid"]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
 size_flags_vertical = 4
 value = 70.0
 
-[node name="BackButton" type="Button" parent="SettingsOverlay/VBox"]
+[node name="BackButton" type="Button" parent="MarginContainer/MenuLayout/SettingsOverlay/VBox"]
 layout_mode = 2
+mouse_default_cursor_shape = 2
 text = "BACK"
 
-[node name="CreditsOverlay" type="PanelContainer" parent="."]
+[node name="CreditsOverlay" type="PanelContainer" parent="MarginContainer/MenuLayout"]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -158,23 +178,23 @@ offset_bottom = 231.25
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="CreditsOverlay"]
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MenuLayout/CreditsOverlay"]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="CreditsTitle" type="Label" parent="CreditsOverlay/VBox"]
+[node name="CreditsTitle" type="Label" parent="MarginContainer/MenuLayout/CreditsOverlay/VBox"]
 layout_mode = 2
 size_flags_vertical = 0
 text = "DEVELOPERS"
 label_settings = SubResource("LabelSettings_title")
 horizontal_alignment = 1
 
-[node name="HSeparator3" type="HSeparator" parent="CreditsOverlay/VBox"]
+[node name="HSeparator3" type="HSeparator" parent="MarginContainer/MenuLayout/CreditsOverlay/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="CreditsText" type="RichTextLabel" parent="CreditsOverlay/VBox"]
+[node name="CreditsText" type="RichTextLabel" parent="MarginContainer/MenuLayout/CreditsOverlay/VBox"]
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 size_flags_vertical = 3
@@ -195,17 +215,18 @@ Lee & Bigz
 [color=yellow][b]Thank you for playing Tandem Snatch <3[/b]
 "
 
-[node name="HSeparator2" type="HSeparator" parent="CreditsOverlay/VBox"]
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/MenuLayout/CreditsOverlay/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="BackButton" type="Button" parent="CreditsOverlay/VBox"]
+[node name="BackButton" type="Button" parent="MarginContainer/MenuLayout/CreditsOverlay/VBox"]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+mouse_default_cursor_shape = 2
 text = "BACK"
 
-[node name="TutorialOverlay" type="PanelContainer" parent="."]
+[node name="TutorialOverlay" type="PanelContainer" parent="MarginContainer/MenuLayout"]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -220,67 +241,68 @@ offset_bottom = 210.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="TutorialOverlay"]
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MenuLayout/TutorialOverlay"]
 layout_mode = 2
 theme_override_constants/separation = 15
 alignment = 1
 
-[node name="TutorialTitle" type="Label" parent="TutorialOverlay/VBox"]
+[node name="TutorialTitle" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox"]
 layout_mode = 2
 text = "HOW TO PLAY"
 label_settings = SubResource("LabelSettings_title")
 horizontal_alignment = 1
 
-[node name="ControlsGrid" type="GridContainer" parent="TutorialOverlay/VBox"]
+[node name="ControlsGrid" type="GridContainer" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox"]
 layout_mode = 2
 columns = 2
 
-[node name="SteerLabel" type="Label" parent="TutorialOverlay/VBox/ControlsGrid"]
+[node name="SteerLabel" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox/ControlsGrid"]
 layout_mode = 2
 text = "Lane Steer (A / D)"
 
-[node name="SteerDesc" type="Label" parent="TutorialOverlay/VBox/ControlsGrid"]
+[node name="SteerDesc" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox/ControlsGrid"]
 layout_mode = 2
 text = "Shift motorcycle left/right"
 
-[node name="NitroLabel" type="Label" parent="TutorialOverlay/VBox/ControlsGrid"]
+[node name="NitroLabel" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox/ControlsGrid"]
 layout_mode = 2
 text = "Nitro Speed (Shift)"
 
-[node name="NitroDesc" type="Label" parent="TutorialOverlay/VBox/ControlsGrid"]
+[node name="NitroDesc" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox/ControlsGrid"]
 layout_mode = 2
 text = "Hold down for double speed (drains gas!)"
 
-[node name="QTELabel" type="Label" parent="TutorialOverlay/VBox/ControlsGrid"]
+[node name="QTELabel" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox/ControlsGrid"]
 layout_mode = 2
 text = "Hablot / QTE (Arrow Keys)"
 
-[node name="QTEDesc" type="Label" parent="TutorialOverlay/VBox/ControlsGrid"]
+[node name="QTEDesc" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox/ControlsGrid"]
 layout_mode = 2
 text = "Match the arrow prompt to snatch goods!"
 
-[node name="CamLabel" type="Label" parent="TutorialOverlay/VBox/ControlsGrid"]
+[node name="CamLabel" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox/ControlsGrid"]
 layout_mode = 2
 text = "Camera POV (V)"
 
-[node name="CamDesc" type="Label" parent="TutorialOverlay/VBox/ControlsGrid"]
+[node name="CamDesc" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox/ControlsGrid"]
 layout_mode = 2
 text = "Toggle driver/snatcher perspectives"
 
-[node name="RestartLabel" type="Label" parent="TutorialOverlay/VBox/ControlsGrid"]
+[node name="RestartLabel" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox/ControlsGrid"]
 layout_mode = 2
 text = "Quick Restart (R)"
 
-[node name="RestartDesc" type="Label" parent="TutorialOverlay/VBox/ControlsGrid"]
+[node name="RestartDesc" type="Label" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox/ControlsGrid"]
 layout_mode = 2
 text = "Reload current run instantly"
 
-[node name="BackButton" type="Button" parent="TutorialOverlay/VBox"]
+[node name="BackButton" type="Button" parent="MarginContainer/MenuLayout/TutorialOverlay/VBox"]
 layout_mode = 2
 size_flags_horizontal = 4
+mouse_default_cursor_shape = 2
 text = "BACK"
 
-[node name="QuitConfirmOverlay" type="PanelContainer" parent="."]
+[node name="QuitConfirmOverlay" type="PanelContainer" parent="MarginContainer/MenuLayout"]
 visible = false
 layout_mode = 1
 anchors_preset = 8
@@ -295,30 +317,32 @@ offset_bottom = 100.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="VBox" type="VBoxContainer" parent="QuitConfirmOverlay"]
+[node name="VBox" type="VBoxContainer" parent="MarginContainer/MenuLayout/QuitConfirmOverlay"]
 layout_mode = 2
 theme_override_constants/separation = 20
 alignment = 1
 
-[node name="QuitPrompt" type="Label" parent="QuitConfirmOverlay/VBox"]
+[node name="QuitPrompt" type="Label" parent="MarginContainer/MenuLayout/QuitConfirmOverlay/VBox"]
 layout_mode = 2
 text = "SIGURADO KA BA?"
 label_settings = SubResource("LabelSettings_title")
 horizontal_alignment = 1
 
-[node name="HBox" type="HBoxContainer" parent="QuitConfirmOverlay/VBox"]
+[node name="HBox" type="HBoxContainer" parent="MarginContainer/MenuLayout/QuitConfirmOverlay/VBox"]
 layout_mode = 2
 theme_override_constants/separation = 30
 alignment = 1
 
-[node name="YesButton" type="Button" parent="QuitConfirmOverlay/VBox/HBox"]
+[node name="YesButton" type="Button" parent="MarginContainer/MenuLayout/QuitConfirmOverlay/VBox/HBox"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+mouse_default_cursor_shape = 2
 text = "YES"
 
-[node name="NoButton" type="Button" parent="QuitConfirmOverlay/VBox/HBox"]
+[node name="NoButton" type="Button" parent="MarginContainer/MenuLayout/QuitConfirmOverlay/VBox/HBox"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+mouse_default_cursor_shape = 2
 text = "NO"
 
 [node name="TransitionOverlay" type="ColorRect" parent="."]

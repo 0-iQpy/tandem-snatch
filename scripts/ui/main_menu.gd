@@ -1,28 +1,28 @@
 extends Control
 
 # --- Node References ---
-@onready var main_buttons_container = $CenterContainer/MainButtons
-@onready var play_button = $CenterContainer/MainButtons/PlayButton
-@onready var controls_button = $CenterContainer/MainButtons/ControlsButton
-@onready var settings_button = $CenterContainer/MainButtons/SettingsButton
-@onready var credits_button = $CenterContainer/MainButtons/CreditsButton
-@onready var quit_button = $CenterContainer/MainButtons/QuitButton
+@onready var main_buttons_container = $MarginContainer/MenuLayout/CenterContainer/MainButtons
+@onready var play_button = $MarginContainer/MenuLayout/CenterContainer/MainButtons/PlayButton
+@onready var controls_button = $MarginContainer/MenuLayout/CenterContainer/MainButtons/ControlsButton
+@onready var settings_button = $MarginContainer/MenuLayout/CenterContainer/MainButtons/SettingsButton
+@onready var credits_button = $MarginContainer/MenuLayout/CenterContainer/MainButtons/CreditsButton
+@onready var quit_button = $MarginContainer/MenuLayout/CenterContainer/MainButtons/QuitButton
 
-@onready var settings_overlay = $SettingsOverlay
-@onready var master_slider = $SettingsOverlay/VBox/SliderGrid/MasterSlider
-@onready var music_slider = $SettingsOverlay/VBox/SliderGrid/MusicSlider
-@onready var sfx_slider = $SettingsOverlay/VBox/SliderGrid/SFXSlider
-@onready var settings_back_button = $SettingsOverlay/VBox/BackButton
+@onready var settings_overlay = $MarginContainer/MenuLayout/SettingsOverlay
+@onready var master_slider = $MarginContainer/MenuLayout/SettingsOverlay/VBox/SliderGrid/MasterSlider
+@onready var music_slider = $MarginContainer/MenuLayout/SettingsOverlay/VBox/SliderGrid/MusicSlider
+@onready var sfx_slider = $MarginContainer/MenuLayout/SettingsOverlay/VBox/SliderGrid/SFXSlider
+@onready var settings_back_button = $MarginContainer/MenuLayout/SettingsOverlay/VBox/BackButton
 
-@onready var credits_overlay = $CreditsOverlay
-@onready var credits_back_button = $CreditsOverlay/VBox/BackButton
+@onready var credits_overlay = $MarginContainer/MenuLayout/CreditsOverlay
+@onready var credits_back_button = $MarginContainer/MenuLayout/CreditsOverlay/VBox/BackButton
 
-@onready var tutorial_overlay = $TutorialOverlay
-@onready var tutorial_back_button = $TutorialOverlay/VBox/BackButton
+@onready var tutorial_overlay = $MarginContainer/MenuLayout/TutorialOverlay
+@onready var tutorial_back_button = $MarginContainer/MenuLayout/TutorialOverlay/VBox/BackButton
 
-@onready var quit_confirm_overlay = $QuitConfirmOverlay
-@onready var quit_yes_button = $QuitConfirmOverlay/VBox/HBox/YesButton
-@onready var quit_no_button = $QuitConfirmOverlay/VBox/HBox/NoButton
+@onready var quit_confirm_overlay = $MarginContainer/MenuLayout/QuitConfirmOverlay
+@onready var quit_yes_button = $MarginContainer/MenuLayout/QuitConfirmOverlay/VBox/HBox/YesButton
+@onready var quit_no_button = $MarginContainer/MenuLayout/QuitConfirmOverlay/VBox/HBox/NoButton
 
 @onready var transition_overlay = $TransitionOverlay
 

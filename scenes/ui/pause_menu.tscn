@@ -59,23 +59,27 @@ horizontal_alignment = 1
 [node name="ResumeButton" type="Button" parent="PanelContainer/VBox"]
 layout_mode = 2
 focus_neighbor_bottom = NodePath("../RestartButton")
+mouse_default_cursor_shape = 2
 text = "RESUME"
 
 [node name="RestartButton" type="Button" parent="PanelContainer/VBox"]
 layout_mode = 2
 focus_neighbor_top = NodePath("../ResumeButton")
 focus_neighbor_bottom = NodePath("../MenuButton")
+mouse_default_cursor_shape = 2
 text = "RESTART RUN"
 
 [node name="MenuButton" type="Button" parent="PanelContainer/VBox"]
 layout_mode = 2
 focus_neighbor_top = NodePath("../RestartButton")
 focus_neighbor_bottom = NodePath("../QuitButton")
+mouse_default_cursor_shape = 2
 text = "MAIN MENU"
 
 [node name="QuitButton" type="Button" parent="PanelContainer/VBox"]
 layout_mode = 2
 focus_neighbor_top = NodePath("../MenuButton")
+mouse_default_cursor_shape = 2
 text = "EXIT"
 
 [node name="ConfirmOverlay" type="PanelContainer" parent="."]
@@ -100,6 +104,7 @@ alignment = 1
 
 [node name="ConfirmPrompt" type="Label" parent="ConfirmOverlay/VBox"]
 layout_mode = 2
+mouse_default_cursor_shape = 2
 text = "SIGURADO KA BA?"
 label_settings = SubResource("LabelSettings_paused")
 horizontal_alignment = 1
@@ -112,9 +117,11 @@ alignment = 1
 [node name="YesButton" type="Button" parent="ConfirmOverlay/VBox/HBox"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+mouse_default_cursor_shape = 2
 text = "YES"
 
 [node name="NoButton" type="Button" parent="ConfirmOverlay/VBox/HBox"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+mouse_default_cursor_shape = 2
 text = "NO"
