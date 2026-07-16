@@ -1,7 +1,7 @@
 extends CanvasLayer
 
 # --- Node References ---
-@onready var gas_meter = $MarginContainer/HUDLayout/VBox/GasMeter
+@onready var gas_meter = $MarginContainer/HUDLayout/HBox/GasMeter
 @onready var speed_label = $MarginContainer/HUDLayout/VBox2/SpeedLabel
 @onready var speedometer = $MarginContainer/HUDLayout/VBox2/Speedometer
 
